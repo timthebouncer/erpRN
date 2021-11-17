@@ -6,7 +6,7 @@ import Counter from '../Counter/Counter';
 
 
 const ProductSalesModal=(props)=>{
-  const{checkedClassId,productSales,itemRef} = props
+  const{productSales,itemRef} = props
 
   const [selectedValue, setSelectedValue] = useState("");
   const[quantity, setQuantity] = useState(1)
@@ -19,7 +19,7 @@ const ProductSalesModal=(props)=>{
   const onChangeSelect=(e)=>{
     setSelectedValue(e)
     itemRef.current = productSales.find(item=>item.depotId === e)
-    itemRef.current.quantity = quantity
+    itemRef.current.quantity = ['公斤','公克','台斤'].includes(newProductList.unit) ? 1:quantity
   }
 
 
@@ -34,14 +34,8 @@ const ProductSalesModal=(props)=>{
       })
       setDepotList(depotList)
       itemRef.current = newProductList
-      itemRef.current.quantity = quantity
-    console.log(itemRef,'itemRef');
+      itemRef.current.quantity = ['公斤','公克','台斤'].includes(newProductList.unit) ? 1:quantity
   },[])
-
-  // useEffect(()=>{
-  //   itemRef.current.quantity = quantity
-  //   console.log(1);
-  // },[setQuantity])
 
   const onChange=(e)=>{
     setQuantity(e)
@@ -50,16 +44,16 @@ const ProductSalesModal=(props)=>{
 
   return(
     <View>
-              <View style={{flexDirection:'row', justifyContent:'space-between',marginBottom:35}}>
-                <Text style={{fontSize:20}}>商品條碼</Text>
-                <Text style={{fontSize:20}}>{newProductList?.barcode}</Text>
+              <View style={styles.rowWrapper}>
+                <Text style={styles.makeText}>商品條碼</Text>
+                <Text style={styles.makeText}>{newProductList?.barcode}</Text>
               </View>
-              <View style={{flexDirection:'row', justifyContent:'space-between',marginBottom:35}}>
-                <Text style={{fontSize:20}}>商品名稱</Text>
-                <Text style={{fontSize:20}}>{newProductList?.alias ? newProductList?.alias: newProductList?.productName}</Text>
+              <View style={styles.rowWrapper}>
+                <Text style={styles.makeText}>商品名稱</Text>
+                <Text style={styles.makeText}>{newProductList?.alias ? newProductList?.alias: newProductList?.productName}</Text>
               </View>
-              <View style={{flexDirection:'row', justifyContent:'space-between',marginBottom:35}}>
-                <Text style={{fontSize:20}}>庫存倉庫</Text>
+              <View style={styles.rowWrapper}>
+                <Text style={styles.makeText}>庫存倉庫</Text>
                 <Picker
                   selectedValue={selectedValue}
                   style={{ height: 50, width: 160 }}
@@ -74,16 +68,20 @@ const ProductSalesModal=(props)=>{
                   }
                 </Picker>
               </View>
-              <View style={{flexDirection:'row', justifyContent:'space-between',marginBottom:35}}>
-                <Text style={{fontSize:20}}>單位</Text>
-                <Text style={{fontSize:20}}>{newProductList?.unit}</Text>
+              <View style={styles.rowWrapper}>
+                <Text style={styles.makeText}>單位</Text>
+                <Text style={styles.makeText}>{newProductList?.unit}</Text>
               </View>
-              <View style={{flexDirection:'row', justifyContent:'space-between',marginBottom:35}}>
-                <Text style={{fontSize:20}}>數量</Text>
-                <Counter quantity={quantity} setQuantity={e=>onChange(e)} itemRef={itemRef.current} />
+              <View style={styles.rowWrapper}>
+                <Text style={styles.makeText}>數量</Text>
+                {
+                  ['公斤','公克','台斤'].includes(newProductList.unit) ? (
+                    <Text>{newProductList.weight}</Text>
+                  ):<Counter quantity={quantity} setQuantity={e=>onChange(e)} />
+                }
               </View>
-              <View style={{flexDirection:'row', justifyContent:'space-between',marginBottom:35}}>
-                <Text style={{fontSize:20}}>備註</Text>
+              <View style={styles.rowWrapper}>
+                <Text style={styles.makeText}>備註</Text>
                 <TextInput multiline onChangeText={(e)=>handleInput('remark',e)} style={styles.textArea}/>
               </View>
     </View>
@@ -91,6 +89,8 @@ const ProductSalesModal=(props)=>{
 }
 
 const styles = StyleSheet.create({
+  rowWrapper:{flexDirection:'row', justifyContent:'space-between',marginBottom:35},
+  makeText: {fontSize: 20},
   textArea:{
     height: 100,
     width:250,

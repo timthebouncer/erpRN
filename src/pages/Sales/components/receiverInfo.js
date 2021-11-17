@@ -1,99 +1,82 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, TextInput} from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
+import {useContextSelector} from 'use-context-selector';
+import {orderListContext} from '../../../store/orderListProvider';
 
 
 
 const ReceiverInfo=({receiveInfo,checkedReceiver})=>{
-  if(!receiveInfo || checkedReceiver==null) return<></>
+  const {setGetReceiver}  = useContextSelector(orderListContext,e=>e)
+  const [selectedReceiveInfo, setSelectedReceiveInfo] = useState({})
 
-    let selectedReceiveInfo = {}
-    if(checkedReceiver !== 0 && checkedReceiver !== 1){
-      selectedReceiveInfo = receiveInfo?.recipientList[checkedReceiver-2]
+  useEffect(()=>{
+    if(checkedReceiver !== 0 && checkedReceiver !== 1 && receiveInfo?.recipientList != null){
+      setSelectedReceiveInfo(receiveInfo.recipientList[checkedReceiver-2])
+    }else {
+      setGetReceiver({})
     }
+  }, [receiveInfo, checkedReceiver])
 
+  useEffect(()=>{
+    setGetReceiver(selectedReceiveInfo)
+  },[selectedReceiveInfo])
+
+
+  if(!receiveInfo || checkedReceiver==null) return<></>
 
   if(checkedReceiver === 0){
     return(
       <View>
         {
-          (receiveInfo.defaultReceiveInfo === 0) ?<Text style={{color:'black',fontSize:17,marginBottom:25}}>同客戶資料(預設地址)</Text>:<Text style={{color:'black',fontSize:17,marginBottom:25}}>同客戶資料</Text>
+          (receiveInfo.defaultReceiveInfo === 0) ?<Text style={[styles.textStyle,styles.marginBottom25]}>同客戶資料(預設地址)</Text>:<Text style={[styles.textStyle,styles.marginBottom25]}>同客戶資料</Text>
         }
-        <View style={{flexDirection:'row'}}>
-          <Text style={{color:'black',fontSize:17, marginLeft:-90,marginRight:80}}>{receiveInfo?.name}</Text>
-          <Text style={{color:'black',fontSize:17,marginBottom:25}}>{receiveInfo?.tel}</Text>
+        <View style={styles.makeRow}>
+          <Text style={[styles.textStyle,styles.marginLeftNg100,styles.marginRight80]}>{receiveInfo?.name}</Text>
+          <Text style={[styles.textStyle,styles.marginBottom25,styles.marginLeftNg50]}>{receiveInfo?.tel}</Text>
         </View>
-        <Text style={{color:'black',fontSize:17, width:300}}>{receiveInfo?.address}</Text>
+        <Text style={[styles.textStyle,styles.width300]}>{receiveInfo?.address}</Text>
       </View>
     )
   }else if(checkedReceiver === 1){
     return(
       <View>
         {
-          (receiveInfo.defaultReceiveInfo === 1) ?<Text style={{color:'black',fontSize:17,marginBottom:25}}>同公司資料(預設地址)</Text>:<Text style={{color:'black',fontSize:17,marginBottom:25}}>同公司資料</Text>
+          (receiveInfo.defaultReceiveInfo === 1) ?<Text style={[styles.textStyle,styles.marginBottom25]}>同公司資料(預設地址)</Text>:<Text style={[styles.textStyle,styles.marginBottom25]}>同公司資料</Text>
         }
-        <Text style={{color:'black',fontSize:17}}>{receiveInfo?.companyAddress}</Text>
-        <Text style={{color:'black',fontSize:17}}>{receiveInfo?.companyTel}</Text>
-        <Text style={{color:'black',fontSize:17}}>{receiveInfo?.companyName}</Text>
+        <Text style={styles.textStyle}>{receiveInfo?.companyAddress}</Text>
+        <Text style={styles.textStyle}>{receiveInfo?.companyTel}</Text>
+        <Text style={styles.textStyle}>{receiveInfo?.companyName}</Text>
       </View>
     )
   }else if(checkedReceiver > 1){
     return(
       <View>
         {
-          (receiveInfo.defaultReceiveInfo === checkedReceiver) ?<Text style={{color:'black',fontSize:17,marginBottom:25}}>(預設地址)</Text>:<Text style={{marginBottom:25}} />
+          (receiveInfo.defaultReceiveInfo === checkedReceiver) ?<Text style={[styles.textStyle,styles.marginBottom25]}>(預設地址)</Text>:<Text style={styles.marginBottom25} />
         }
-        <View style={{flexDirection:'row'}}>
-          <Text style={{color:'black',fontSize:17, marginLeft:-110,marginRight:80}}>{selectedReceiveInfo?.receiver}</Text>
-          <Text style={{color:'black',fontSize:17,marginBottom:25}}>{selectedReceiveInfo?.tel}</Text>
+        <View style={styles.makeRow}>
+          <Text style={[styles.textStyle,styles.marginLeftNg100,styles.marginRight80]}>{selectedReceiveInfo?.receiver}</Text>
+          <Text style={[styles.textStyle,styles.marginBottom25,styles.marginLeftNg50]}>{selectedReceiveInfo?.tel}</Text>
         </View>
-        <View style={{flexDirection:'row'}}>
-          <Text style={{color:'black',fontSize:17}}>{selectedReceiveInfo?.postCode}</Text>
-          <Text style={{color:'black',fontSize:17}}>{selectedReceiveInfo?.address}</Text>
+        <View style={styles.makeRow}>
+          <Text style={styles.textStyle}>{selectedReceiveInfo?.postCode}</Text>
+          <Text style={styles.textStyle}>{selectedReceiveInfo?.address}</Text>
         </View>
       </View>
     )
   }else return <></>
 
-  // const RenderCustomer=()=>{
-  //   return(
-  //     <View>
-  //       {
-  //         (receiveInfo.defaultReceiveInfo === 0) || (checkedReceiver === 0) ?<Text style={{color:'black',fontSize:17,marginBottom:25}}>同客戶資料</Text>:<></>
-  //       }
-  //       <View style={{flexDirection:'row'}}>
-  //         <Text style={{color:'black',fontSize:17, marginLeft:-90,marginRight:80}}>{receiveInfo.name}</Text>
-  //         <Text style={{color:'black',fontSize:17,marginBottom:25}}>{receiveInfo.tel}</Text>
-  //       </View>
-  //       <Text style={{color:'black',fontSize:17, width:300}}>{receiveInfo.address}</Text>
-  //     </View>
-  //   )
-  // }
-
-  // const RenderCompany=()=>{
-  //   return(
-  //     <View>
-  //       <Text style={{color:'black',fontSize:17}}>同公司資料</Text>
-  //       <Text style={{color:'black',fontSize:17}}>{receiveInfo.companyAddress}</Text>
-  //       <Text style={{color:'black',fontSize:17}}>{receiveInfo.companyTel}</Text>
-  //       <Text style={{color:'black',fontSize:17}}>{receiveInfo.companyName}</Text>
-  //     </View>
-  //   )
-  // }
-
-  // const RenderCustom=()=>{
-  //   return(
-  //     <View>
-  //       <Text style={{color:'black',fontSize:17}}>11111</Text>
-  //       <Text style={{color:'black',fontSize:17}}>22222</Text>
-  //       <Text style={{color:'black',fontSize:17}}>33333</Text>
-  //     </View>
-  //   )
-  // }
-
-
-
-
-
 }
+
+const styles=StyleSheet.create({
+  textStyle:{color:'black',fontSize:17},
+  marginRight80:{marginRight:80},
+  marginBottom25:{marginBottom:25},
+  marginLeftNg100:{marginLeft:-100},
+  marginLeftNg50:{marginLeft:-30},
+  width300:{width:300},
+  makeRow:{flexDirection:'row'}
+})
+
 
 export default ReceiverInfo

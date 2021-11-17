@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {View, ScrollView, Text, StyleSheet, TextInput} from 'react-native';
 import {List,RadioButton, Button} from 'react-native-paper';
 import service from '../../apis/check';
@@ -15,6 +15,9 @@ import {SwipeRow} from'react-native-swipe-list-view'
 import Counter from '../../components/Counter/Counter';
 import {orderListContext} from '../../store/orderListProvider';
 import {Icon} from 'react-native-material-ui';
+import { Dimensions } from 'react-native'
+import {snackBarContext} from '../../components/SnackBar/SnackBar';
+import EditRemark from './components/editRemark';
 
 const Sales=({navigation})=>{
   const[searchName, setSearchName] = useState('')
@@ -31,73 +34,104 @@ const Sales=({navigation})=>{
   const[newCustomer, setNewCustomer] = useState(()=>{return {name:"",tel:"",postCode:"",address:"",classesId:'',defaultReceiveInfo:0}})
   const[newReceiver, setNewReceiver] = useState(()=>{return {classesId:"",clientId:"",defaultReceiveInfo:0,recipientList:{id: "", receiver: "", tel: "", postCode: "", address: ""}} })
   const[productSales, setProductSales] = useState({})
-  const[orderDetailItemResponseList, setOrderDetailItem] = useState([])
+  const[orderItemResponseList, setOrderItem] = useState([])
   const currentOrderItemRef = useRef(null)
-  const currentTotalRef = useRef(null)
-  const [editOrderItemRemark, setEditOrderItemRemark] = useState(null)
   const [discountVal, setDiscountVal] = useState(0)
   const[receiveList, setReceiveList] = useState(()=>{return [{id:1,receiver:'同客戶資料'},{id:2,receiver:'同公司資料'}]})
+  const [readyToGo, setReadyToGo] = useState(false);
   const inputRef = useRef(null)
-  const show  = useContextSelector(dialogContext,e=>e.show)
-  const [setOrderList]  = useContextSelector(orderListContext,e=>[e.setOrderList])
+  const swipeRef = useRef(null)
+  const showModal  = useContextSelector(dialogContext,e=>e.showModal)
+  const show  = useContextSelector(snackBarContext,e=>e.show)
+  const [setOrderList, getReceiver]  = useContextSelector(orderListContext,e=>[e.setOrderList])
 
   const onSave = async () => {
     if(currentOrderItemRef.current === null)return
-    await setOrderDetailItem(e => [...e, currentOrderItemRef.current])
+    await setOrderItem(e => [...e, currentOrderItemRef.current])
+    setReadyToGo(true)
     currentOrderItemRef.current = null
   }
   const canCelHandler=()=>{
     currentOrderItemRef.current = null
   }
-  const onChangeSS=i=>value=>{
-    setOrderDetailItem(e => {
-      const e2 = e.slice()
-      e2[i].quantity = value
-      return e2
-    })
+  const onChangeModalValue=(i,type)=>value=>{
+    if(type === 'quantity'){
+      setOrderItem(e => {
+        const e2 = e.slice()
+        e2[i].quantity = value
+        return e2
+      })
+    }else {
+      setOrderItem(e => {
+        const e2 = e.slice()
+        e2[i].remark = value
+        return e2
+      })
+    }
   }
-  const onConfirm=()=>{}
+  const onConfirm=(type)=>{
+    if(newCustomerData.current !== null && type === 'customer'){
+      newCustomerData.current.classesId = checkedClassId
+
+      if(!newCustomerData.current.name) return
+      service.Customer.add(newCustomerData.current)
+        .then(()=>{
+          show('新增客戶成功','success')
+          service.Customer.getClientList(checkedClassId)
+            .then(res=>{
+              setCustomerList(res.data)
+              setOriginalData(res.data)
+              newCustomerData.current = null
+            })
+            .catch(err=>{
+              console.log(err);
+            })
+        })
+
+    }else if(newReceiverData.current !== null && type === 'receiver'){
+      newReceiverData.current.classesId = checkedClassId
+      newReceiverData.current.clientId = checkedCustomer
+      newReceiverData.current.defaultReceiveInfo = checkedReceiver
+
+      if(!newReceiverData.current.name) return
+      service.Customer.update(newReceiverData.current)
+        .then(res=>{
+          console.log(res);
+          newReceiverData.current = null
+        })
+    }
+  }
 
   useEffect(() => {
     newCustomerData.current = newCustomer
     newReceiverData.current = newReceiver
-  }, [newCustomer])
+  }, [newCustomer,newReceiver])
 
-  useEffect(()=>{
-    let newObject = {
-      totalPack:0,
-      dealPrice:0,
-      total:0,
-      discount:0
-    }
-    currentTotalRef.current = newObject
-  },[])
 
-  useEffect(()=>{
-    console.log(123);
-    orderDetailItemResponseList.forEach(item=>{
-      console.log(item,'item');
-      currentTotalRef.current.totalPack += item.quantity
-      // currentTotalRef.current.dealPrice = item.dealPrice
-      currentTotalRef.current.total += item.dealPrice * item.quantity
+  const {quantity, total} = useMemo(() => {
+    const result = { quantity: 0, total: 0 }
+    orderItemResponseList.forEach((e) => {
+      result.quantity += e.quantity
+      result.total += ['公斤','公克','台斤'].includes(e.unit) ? e.dealPrice * e.weight : e.dealPrice * e.quantity
     })
-  },[orderDetailItemResponseList])
+    return result
+  }, [orderItemResponseList])
 
   const newCustomerOrReceiver = (type) =>{
-    show({ type, onOk:()=>onConfirm, content: () => <View>
+    showModal({ type, onOk:()=>onConfirm(type), content: () => <View>
         {
           <
-            NewCustomer itemRef={currentOrderItemRef} type={type} setNewCustomer={setNewCustomer} setNewReceiver={setNewReceiver} checkedClassId={checkedClassId} productSales={productSales}
+            NewCustomer  setNewCustomer={setNewCustomer} setNewReceiver={setNewReceiver} type={type}
           />
         }
       </View>})
   }
 
   const addProductSales=(type,productSales)=>{
-    show({ type, onOk:()=>onSave(),onCancel:()=>canCelHandler(), content: () => <View>
+    showModal({ type, onOk:()=>onSave(),onCancel:()=>canCelHandler(), content: () => <View>
         {
           <
-            ProductSalesModal itemRef={currentOrderItemRef} type={type} checkedClassId={checkedClassId} productSales={productSales}
+            ProductSalesModal itemRef={currentOrderItemRef}  productSales={productSales}
           />
         }
       </View>})
@@ -131,6 +165,7 @@ const Sales=({navigation})=>{
       setExpandedId(0)
     }else if(type === "receiver"){
       await setCheckedReceiver(id)
+      setExpandedId(0)
     }
   }
 
@@ -160,14 +195,41 @@ const Sales=({navigation})=>{
       })
   },500);
 
+  const openEditRemark =(type,item,index)=>{
+    showModal({type,onOk:()=>editRemark(),content: () => <View><EditRemark item={item} setRemark={onChangeModalValue(index,'remark')} /></View>})
+  }
+  const editRemark=()=>{
+    swipeRef.current.combinedOnPress()
+  }
+
   const deleteProduct = (index) =>{
-    let newOrderList = [...orderDetailItemResponseList]
+    let newOrderList = [...orderItemResponseList]
     newOrderList.splice(index, 1)
-    setOrderDetailItem(newOrderList)
+    setOrderItem(newOrderList)
   }
 
   const nextStep = () => {
-    setOrderList(e=>({...e,orderDetailItemResponseList:orderDetailItemResponseList}))
+    let newData = []
+    orderItemResponseList.forEach(item=>{
+      newData.push({
+        amount: item.quantity,
+        barcode: item.barcode,
+        clientPrice: item.clientPrice ? item.clientPrice.toFixed(2) : item.dealPrice.toFixed(2),
+        depotId: item.depotId,
+        discount: parseInt(discountVal),
+        price: item.price.toFixed(2),
+        weight: item.weight,
+        unit: item.unit,
+        remark: item.remark ? item.remark:'',
+      })
+    })
+
+    setOrderList(e=>({...e,clientId:checkedCustomer,
+      recipientId:checkedReceiver===0?"0":checkedReceiver===1?"1":getReceiver.id,
+      allowance:parseInt(discountVal),
+      totalPrice:(total- Number(discountVal)).toFixed(2),
+      defaultReceiveInfo:checkedReceiver,
+      orderItemRequestList:newData}))
     navigation.navigate('SalesShipment');
   }
 
@@ -180,9 +242,9 @@ const Sales=({navigation})=>{
         console.log(err);
       })
   },[])
+  let deviceWidth = Dimensions.get('window').width
 
-
-  return <ScrollView style={{backgroundColor: '#FFF0E9'}}>
+  return <ScrollView style={{backgroundColor: '#FFF0E9', width:deviceWidth}}>
     <List.AccordionGroup expandedId={expandedId} onAccordionPress={(e)=>onChangeList(e)} >
       <Text style={styles.productTitle}>客戶資訊</Text>
       <List.Accordion style={styles.firstPart} title="客戶類別:" id="1"
@@ -247,7 +309,7 @@ const Sales=({navigation})=>{
         <List.Accordion style={styles.thirdPart} title="收件資料" id="3"
                         titleStyle={styles.accordion2}
                         descriptionStyle={{position:'relative', left:'30%',top:-21}}
-                        description={<ReceiverInfo receiveInfo={receiveInfo} checkedReceiver={checkedReceiver}/>}
+                        description={<ReceiverInfo receiveInfo={receiveInfo} checkedReceiver={checkedReceiver} />}
         >
           {
             receiveList.map((item,idx)=>{
@@ -282,19 +344,18 @@ const Sales=({navigation})=>{
     <View>
       <Text style={styles.productTitle}>商品資料</Text>
       {
-        orderDetailItemResponseList.length > 0 && orderDetailItemResponseList.map((item,index)=>{
-          console.log(item);
+        orderItemResponseList.length > 0 && orderItemResponseList.map((item,index)=>{
           return(
-              <SwipeRow style={{marginTop:-10}} leftOpenValue={150} rightOpenValue={-130}>
+              <SwipeRow ref={swipeRef} style={{marginTop:-10}} leftOpenValue={150} rightOpenValue={-130} key={item?.depotId} >
                 <View style={styles.standaloneRowBack}>
                   <View style={styles.leftDelete}>
-                    <Button><Text style={styles.backTextWhite}>編輯備註</Text></Button>
+                    <Button onPress={()=>openEditRemark('remark',item,index)}><Text style={styles.backTextWhite}>編輯備註</Text></Button>
                   </View>
                   <View style={styles.rightDelete}>
                     <Button onPress={()=>deleteProduct(index)}><Text style={styles.backTextWhite}>刪除</Text></Button>
                   </View>
                 </View>
-                <View key={item?.depotId} style={styles.productContent}>
+                <View style={styles.productContent}>
                 <View style={styles.contentLeft}>
                   <Text style={styles.textStyle6}>{item?.barcode}</Text>
                   <Text style={styles.textStyle6}>{item?.alias}</Text>
@@ -308,7 +369,7 @@ const Sales=({navigation})=>{
                     ['公斤','公克','台斤'].includes(item?.unit) ? (
                       <Text style={styles.textStyle6}>{item?.weight}</Text>
                     ):(
-                      <Counter quantity={item.quantity} setQuantity={onChangeSS(index)} />
+                      <Counter quantity={item.quantity} setQuantity={onChangeModalValue(index,'quantity')} />
                       // <Text style={styles.textStyle6}>{item?.quantity}</Text>
                     )
                   }
@@ -333,7 +394,7 @@ const Sales=({navigation})=>{
         })
       }
       {
-        orderDetailItemResponseList.length ? (
+        orderItemResponseList.length ? (
           <View>
             <View style={styles.checkoutWrapper}>
               <View>
@@ -343,8 +404,8 @@ const Sales=({navigation})=>{
                 <Text style={styles.textStyle5}>總計</Text>
               </View>
               <View>
-                <Text style={styles.textStyle5}>{currentTotalRef.current.totalPack}</Text>
-                <Text style={styles.textStyle5}>{currentTotalRef.current.total}</Text>
+                <Text style={styles.textStyle5}>{quantity}</Text>
+                <Text style={styles.textStyle5}>${total.toFixed(2)}</Text>
                 <View style={styles.discountWrapper}>
                   <TextInput style={styles.makeInput2}
                              value={String(discountVal)}
@@ -353,7 +414,7 @@ const Sales=({navigation})=>{
                   />
                 </View>
 
-                <Text style={styles.textStyle5}>{currentTotalRef.current.total- Number(discountVal)}</Text>
+                <Text style={styles.textStyle5}>${(total- Number(discountVal)).toFixed(2)}</Text>
               </View>
             </View>
 
@@ -363,7 +424,7 @@ const Sales=({navigation})=>{
         </View>
       }
       <View style={{alignItems:'center',padding:10}}>
-        <Button style={styles.confirmBtn} mode="contained" onPress={nextStep}><Text style={styles.textStyle7}>下一步 > 輸入出貨資料</Text></Button>
+        <Button style={readyToGo? styles.confirmBtn:styles.notReadyBtn} disabled={!readyToGo} mode="contained" onPress={nextStep}><Text style={styles.textStyle7}>下一步 > 輸入出貨資料</Text></Button>
       </View>
     </View>
   </ScrollView>
@@ -423,14 +484,14 @@ const styles=StyleSheet.create({
   textStyle5:{fontSize:28,marginBottom:20},
   textStyle6:{fontSize:18,marginBottom:20},
   textStyle7:{fontSize:18,lineHeight:25},
-  productTitle:{backgroundColor:'#BBBBBB',marginLeft:5,height:30, width:400, marginBottom:10, borderRadius: 5,fontSize:19},
+  productTitle:{backgroundColor:'#BBBBBB',height:30, marginBottom:10, borderRadius: 5,fontSize:19},
   productInput:{flexDirection:'row',justifyContent:'space-around',marginTop:15,marginBottom:25},
   productContent:{flex:1, flexDirection:'row', justifyContent:'space-between', padding:15, backgroundColor:'white',height:255,width:400,marginLeft: 5,
     marginTop:0,marginBottom:13,borderRadius:10,shadowColor: "#000",shadowOffset: { width: 0, height: 5,}, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 10,
   },
   checkoutWrapper:{flex:1, flexDirection:'row', justifyContent:'space-between', padding:10},
 
-  inputWrapper:{marginTop:10, marginLeft: 16,backgroundColor: 'white',width: 380,height:65,
+  inputWrapper:{marginTop:10, marginLeft: 19,backgroundColor: 'white',width: '90%',height:65,
     borderColor: 'white',
     borderRadius:5,
     borderWidth: 1,
@@ -449,14 +510,14 @@ const styles=StyleSheet.create({
     marginLeft:15,
     marginRight:15,
     height: 40,
-    width:280,
+    width:'70%',
     borderColor: 'purple',
     borderRadius:5,
     borderWidth: 3,
   },
   inputStyle2:{backgroundColor: 'white',height: 40,
     width:230,marginRight: 20},
-  searchBtn:{width:5,height:40,marginTop: 5},
+  searchBtn:{height:40,marginTop: 12,backgroundColor:'white'},
   newCustomerOrReceiver:{marginTop:30,marginBottom:30},
   input:{
     height: 50,
@@ -474,7 +535,8 @@ const styles=StyleSheet.create({
     elevation: 5,
   },
   scanWarning:{alignItems:'center',marginBottom:15},
-  confirmBtn:{backgroundColor: '#0e77c1',width:390,height:45,elevation: 0,borderWidth:1,borderColor:'#e1d7cb'},
+  confirmBtn:{backgroundColor: '#0e77c1',width:"95%",height:45,elevation: 0,borderWidth:1,borderColor:'#e1d7cb'},
+  notReadyBtn:{width:"95%",height:45,elevation: 0,borderWidth:1,borderColor:'#e1d7cb'},
   makeInput2: {
     height: 45,
     width: 100,
@@ -482,8 +544,11 @@ const styles=StyleSheet.create({
     borderWidth: 1,
     backgroundColor: 'transparent',
     borderRadius: 5,
+    fontSize:20,
+    textAlign:'center',
+    alignItems:'center',
   },
-  discountWrapper:{marginLeft:-65,marginBottom:15}
+  discountWrapper:{marginBottom:15}
 })
 
 export default Sales

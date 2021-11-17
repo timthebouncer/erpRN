@@ -72,10 +72,8 @@ const DateButton=({data})=>{
   }
 
   const getRestoreLog=(request)=>{
-    console.log(request);
     service.Inventory.getInventoryLogList(request)
       .then(res=>{
-        console.log(res);
         setRestoreLogData(res.data.content)
       })
   }

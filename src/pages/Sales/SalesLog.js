@@ -4,7 +4,6 @@ import {Text, DataTable} from 'react-native-paper';
 import DateButton from '../../components/DateButton/DateButton';
 import service from '../../apis/check';
 import moment from 'moment';
-import { SwipeListView } from 'react-native-swipe-list-view';
 import Basic from '../../components/swipe/swipe';
 import Test from '../../components/test';
 
@@ -26,7 +25,7 @@ const SalesLog=({navigation})=>{
     startDate:'',
     endDate:'',
     pageNumber: 1,
-    pageSize: 15
+    pageSize: 1000
   }})
 
 
@@ -51,23 +50,22 @@ const SalesLog=({navigation})=>{
   // }
 
   useEffect(()=>{
-    console.log('進畫面');
-
     service.Distribute.getDistributeList(postData)
       .then(res=>{
-        console.log(res);
         const {content} = res.data
-        setSalesLogData(content)
+        let newContent = content.filter(item=>item.remark !== "註銷")
+        newContent.forEach((item,index) => item.key = index)
+        setSalesLogData(newContent)
       })
       .catch(err=>{
         console.log(err.response);
       })
-  },[])
+  },[salesLogData])
 
 
   return (
     <View style={styles.container}>
-      <DateButton data={{setSalesLogData,postData,setPostData}} />
+      {/*<DateButton data={{setSalesLogData,postData,setPostData}} />*/}
       <View style={styles.titleText}><Text style={{fontSize:18}}>出貨資料</Text></View>
       <DataTable style={styles.contentWrapper}>
         <DataTable.Header style={styles.itemTitle}>
@@ -81,7 +79,6 @@ const SalesLog=({navigation})=>{
         {
           salesLogData.length ? (
             <Basic data={salesLogData} setSalesLogData={setSalesLogData} navigation={navigation} />
-            // <Test />
           ):(
             <View style={{position:'absolute',marginTop:'30%',marginLeft:'30%'}}>
               <Text style={{fontSize:40}}>尚無資料</Text>
@@ -103,7 +100,7 @@ const styles = StyleSheet.create({
     flex:0.1, flexDirection:'row', justifyContent:'space-between'
   },
   titleText:{flex:0.1,marginBottom:-30},
-  contentWrapper:{flex:0.8},
+  contentWrapper:{flex:1},
   itemTitle:{backgroundColor:'white'},
   itemText:{fontSize:15},
   itemWrapper:{flex:1, flexDirection:'row'},

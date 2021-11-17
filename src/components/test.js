@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,12 +9,12 @@ import {
 
 import { SwipeListView } from 'react-native-swipe-list-view';
 
-export default function Test() {
-  const [listData, setListData] = useState(
-    Array(20)
-      .fill('')
-      .map((_, i) => ({ key: `${i}`, text: `item #${i}` }))
-  );
+export default function Test({data}) {
+  const [listData, setListData] = useState(data);
+
+  useEffect(()=>{
+    data.forEach((item,index) => item.key = index)
+  },[])
 
   const closeRow = (rowMap, rowKey) => {
     console.log(rowMap, rowKey);
@@ -24,13 +24,6 @@ export default function Test() {
     }
   };
 
-  const deleteRow = (rowMap, rowKey) => {
-    closeRow(rowMap, rowKey);
-    const newData = [...listData];
-    const prevIndex = listData.findIndex(item => item.key === rowKey);
-    newData.splice(prevIndex, 1);
-    setListData(newData);
-  };
 
   const onRowDidOpen = rowKey => {
     console.log('This row opened', rowKey);
@@ -56,12 +49,6 @@ export default function Test() {
         onPress={() => closeRow(rowMap, data.item.key)}
       >
         <Text style={styles.backTextWhite}>Close</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.backRightBtn, styles.backRightBtnRight]}
-        onPress={() => deleteRow(rowMap, data.item.key)}
-      >
-        <Text style={styles.backTextWhite}>Delete</Text>
       </TouchableOpacity>
     </View>
   );

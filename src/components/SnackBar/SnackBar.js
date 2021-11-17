@@ -14,7 +14,7 @@ export const SnackBarProvider = ({children}) =>{
   const [msg, setMsg] = useState('')
   const [type, setType] = useState('')
 
-  const show =(msg,status)=>{
+ const show =(msg,status)=>{
     setVisible(true)
     setMsg(msg)
     setType(status)
@@ -28,13 +28,14 @@ export const SnackBarProvider = ({children}) =>{
       msg,
       type
     }}>
+      <CustomSnackBar/>
       {children}
     </snackBarContext.Provider>
   )
 }
 
 
-export const CustomSnackBar=()=>{
+function CustomSnackBar(){
 
   const {visible,setVisible,msg,type} = useContextSelector(snackBarContext,e=>e)
 
@@ -44,7 +45,7 @@ return(
     onDismiss={()=>setVisible(false)}
     visible={visible}
     style={type === 'success' ? styles.successStyle:styles.errorStyle}
-    wrapperStyle={{position:'absolute',top:0}}
+    wrapperStyle={{position:'absolute',top:0,left:'8%',width:'85%',alignItems:'center',justifyContent:'center'}}
   >
       <Text>
         {msg}

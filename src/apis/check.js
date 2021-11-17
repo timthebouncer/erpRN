@@ -46,9 +46,9 @@ const api= {
     deleteOrderList(orderId) {
       return request.delete('/deliveryOrder/cancelOrder/'+ orderId);
     },
-  //   addOrder(data){
-  //     return request.post('/deliveryOrder/addOrder',data)
-  //   },
+    addOrder(data){
+      return request.post('/deliveryOrder/addOrder',data)
+    },
   //   editOrder(data) {
   //     return request.put('/deliveryOrder/editOrder', data)
   //   },
@@ -64,9 +64,9 @@ const api= {
     tagPrint(data){
       return request.post('/deliveryOrder/print',data)
     },
-  //   printOrder(id,type){
-  //     return request.post('/deliveryOrder/printDeliveryOrder/'+id+'/'+type)
-  //   }
+    printOrder(id,type){
+      return request.post('/deliveryOrder/printDeliveryOrder/'+id+'/'+type)
+    }
   },
   Customer:{
     getClass() {
@@ -84,8 +84,9 @@ const api= {
     update(data) {
       return request.put('/client/updateClient', data)
     },
-  //   getClient(clientId) {
-  //     return request.get('/client/'+clientId)
+    getClient(clientId) {
+      return request.get('/client/' + clientId)
     }
+  }
 }
 export default api;

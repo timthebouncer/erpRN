@@ -1,41 +1,47 @@
-import React,{useState,useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import Restore from '../../pages/Restore/RestoreLog';
 import service from '../../apis/check';
-import {View, Text,TextInput, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
 import { Icon,Button } from 'react-native-material-ui';
-import { Menu, MenuItem, MenuDivider } from 'react-native-material-menu';
+import {Menu} from 'react-native-material-menu';
 import moment from 'moment'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {dialogContext} from '../Dialog/Dialog';
 import {useContextSelector} from 'use-context-selector';
+import {PrintModal} from './printModal';
+import {snackBarContext} from '../SnackBar/SnackBar';
 
 
 const Header = ({ navigation, options }) => {
 
-  const show  = useContextSelector(dialogContext,e=>e.show)
-
+  const showModal  = useContextSelector(dialogContext,e=>e.showModal)
+  const {show} = useContextSelector(snackBarContext,e=>e)
   const [visible, setVisible] = useState(false);
   const [user, setUser] = useState('')
   const [ip, setIp] = useState('')
-  const [printName, setPrintName] = useState('')
+  const itemRef = useRef(null)
   const hideMenu = () => setVisible(false);
 
   const showMenu = () => setVisible(true);
 
-  const showSetting=(type)=>{
-    AsyncStorage.getItem('printName').then((value) => {
-      setPrintName(JSON.parse(value))
-      return JSON.parse(value);
-    });
 
-    let dialogData = {title:'header',id:123,ip:ip,printName:printName}
-    show({ type, onOk:()=>dialogData, content: () => null })
+  const storeName=async ()=>{
+    if(itemRef.current === null) return
+  await AsyncStorage.setItem("printName", itemRef.current)
+    itemRef.current = null
+  }
+  const cancelHandler=()=>{
+    itemRef.current = null
   }
 
-  const _logout = async () => {
-  await service.Logout.logout()
+  const showSetting=async ()=>{
+    showModal({onOk:()=>storeName(), onCancel:()=>cancelHandler(),content: () => <View>{<PrintModal itemRef={itemRef} />}</View>})
+  }
+
+  const _logout = () => {
+  service.Logout.logout()
       .then(res=>{
-        console.log(res);
+        show(res.data,'success')
         AsyncStorage.removeItem('token')
       })
     navigation.navigate('Login');
@@ -72,10 +78,6 @@ const Header = ({ navigation, options }) => {
   let today = moment(new Date()).format("YYYY-MM-DD");
 
   useEffect(()=>{
-   // AsyncStorage.getItem('token').then((value) => {
-   //   console.log(value,'val');
-   //    return JSON.parse(value);
-   //  });
    AsyncStorage.getItem('checkUser').then((value) => {
      setUser(JSON.parse(value))
       return JSON.parse(value);
@@ -91,7 +93,7 @@ const Header = ({ navigation, options }) => {
       <View style={styles.container}>
         <View>
           <Text onPress={()=>showSetting('setting')}>
-            <Icon name="settings" />
+            <Icon style={{color:'#f0b8a5'}} name="settings" />
           </Text>
         </View>
         <View style={styles.headerWrapper}>
@@ -100,7 +102,7 @@ const Header = ({ navigation, options }) => {
           </Text>
           <Menu
             visible={visible}
-            anchor={<Text onPress={showMenu}>{visible?<Icon size={40} name="arrow-drop-up" />:<Icon size={40} name="arrow-drop-down" />} </Text>}
+            anchor={<Text onPress={showMenu}>{visible?<Icon size={40} name="arrow-drop-up" />:<Icon size={40} style={{color:'#f0b8a5'}} name="arrow-drop-down" />} </Text>}
             onRequestClose={hideMenu}
             style={styles.menuWrapper}
           >
@@ -126,13 +128,9 @@ const Header = ({ navigation, options }) => {
             </View>
           </Menu>
         </View>
-        <View>
-          <View style={styles.logoutWrapper}>
-            <Text>{user}</Text>
-            <Text onClick={_logout}>
-              <Icon name="logout" />
-            </Text>
-          </View>
+        <View style={styles.logoutWrapper}>
+            <Text style={{fontSize:20, color:'white'}}>{user}</Text>
+            <Button onPress={_logout} icon={'logout'} text="" />
         </View>
       </View>
         <View style={styles.workDay}>
@@ -144,7 +142,7 @@ const Header = ({ navigation, options }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex:0.7,
+    flex:0.9,
     flexDirection:'row',
     justifyContent:'space-between',
     alignItems: 'center',
@@ -163,7 +161,7 @@ const styles = StyleSheet.create({
     position:'absolute',
     top:45,
     left:370,
-    width:330
+    width:330,
   },
   btnWrapper:{
     flexDirection: 'row', padding: 16
@@ -202,7 +200,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  logoutWrapper:{flex:1,flexDirection:'row', alignItems: 'center', justifyContent: 'center'}
+  logoutWrapper:{flex:0.3,flexDirection:'row', alignItems: 'center', justifyContent: 'center',}
 });
 
 

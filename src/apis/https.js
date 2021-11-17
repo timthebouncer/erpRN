@@ -1,13 +1,14 @@
 import axios from "axios";
-import CustomSnackBar from '../components/SnackBar/SnackBar';
 import React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useNavigation} from '@react-navigation/core';
+// import {useNavigation} from '@react-navigation/core';
+import {navigate} from './navigationService'
+
 
 
 // create an axios instance
 const service = axios.create({
-  baseURL: 'http://erp-inventory.tc-tech.tw/api',
+  baseURL: 'http://test-erp-web.tc-tech.tw/api',
   headers: {
     // "Content-Type": "application/json"
   },
@@ -25,18 +26,18 @@ service.interceptors.request.use(
   }
 );
 
+
 service.interceptors.response.use(
   function(response) {
 
     return response;
   },
   function(error) {
+    // show(error.response.data.msg,'error')
     console.log(error.response.data, "res error");
-
+    const { status } = error.response;
     if (status === 403 || status === 401) {
-      const navigation = useNavigation();
-      navigation.navigate('Login')
-      AsyncStorage.removeItem('token')
+      navigate('Login')
     }
     return Promise.reject(error)
   }

@@ -8,10 +8,11 @@ export const orderListContext=createContext(null)
 export const OrderListProvider=({children})=>{
 
   const [orderList, setOrderList] = useState({})
+  const [getReceiver,setGetReceiver] = useState({})
 
   return (
     <orderListContext.Provider value={{
-      orderList, setOrderList
+      orderList, setOrderList,getReceiver,setGetReceiver
     }}>
       {children}
     </orderListContext.Provider>

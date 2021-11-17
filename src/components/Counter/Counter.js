@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import NumericInput from 'react-native-numeric-input'
 
-const Counter=({setQuantity,quantity,itemRef})=>{
-  // if(itemRef === null) return
-  // itemRef.quantity = quantity
+const Counter=({setQuantity,quantity})=>{
   return(
     <NumericInput
       value={quantity}

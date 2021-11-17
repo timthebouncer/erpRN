@@ -26,7 +26,7 @@ const Login = ({ navigation }) => {
    await service.Login.userLogin(formData)
       .then(res=>{
         if (res.status === 200) {
-          navigation.navigate('Restore')
+          navigation.navigate('Sales')
           AsyncStorage.setItem("token", JSON.stringify(res.data.code));
           AsyncStorage.setItem("checkUser", JSON.stringify(res.data.user));
           // this.loading = false;
@@ -35,21 +35,11 @@ const Login = ({ navigation }) => {
       })
      .catch(err => {
        if (err.response.data.msg) {
-         // show(err.response)
-         // this.errorText = err.response.data.msg;
+         show(err.response.data.msg,'error')
          // this.loading = false;
        }
      });
   }
-
-  useEffect(()=>{
-    AsyncStorage.getItem('token').then((value) => {
-      if(JSON.parse(value) === "200"){
-        navigation.navigate('Sales')
-      }
-      return JSON.parse(value);
-    });
-  },[])
 
   return (
     <View style={styles.container}>
@@ -108,7 +98,7 @@ const styles = StyleSheet.create({
   inputWidth:{
     width: 280
   },
-  makeTitle:{width:400,height:70,backgroundColor: 'black',justifyContent: 'center',alignItems: 'center'},
+  makeTitle:{width:400,height:70,backgroundColor: 'black',justifyContent: 'center',alignItems: 'center',marginTop: -100},
   makeIcon:{lineHeight: 70},
   confirmBtn: {
     backgroundColor: '#E8E8E8',

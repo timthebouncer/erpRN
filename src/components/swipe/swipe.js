@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -11,6 +11,8 @@ import {DataTable} from 'react-native-paper';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import service from '../../apis/check';
 import {dialogContext} from '../Dialog/Dialog';
+import {useContextSelector} from 'use-context-selector';
+import {snackBarContext} from '../SnackBar/SnackBar';
 
 
 const wait = (timeout) => {
@@ -18,7 +20,8 @@ const wait = (timeout) => {
 }
 
 export default function Basic({data,setSalesLogData,navigation}) {
-  const {show} = useContext(dialogContext)
+  const {showModal} = useContextSelector(dialogContext,e=>e)
+  const {show} = useContextSelector(snackBarContext,e=>e)
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = React.useCallback(() => {
@@ -26,33 +29,29 @@ export default function Basic({data,setSalesLogData,navigation}) {
     wait(2000).then(() => setRefreshing(false));
   }, []);
 
-  const closeRow = (rowMap, rowKey) => {
+  const closeRow = (rowMap,rowKey) => {
     if (rowMap[rowKey]) {
       rowMap[rowKey].closeRow();
     }
   };
 
-  const printTag=(rowMap,rowKey)=>{
-    console.log(rowKey);
-    service.Distribute.tagPrint({deliveryOrderId:rowKey})
-      .then(res=>{
-        console.log(res);
+  const printTag=(rowMap,rowKey,orderId)=>{
+    service.Distribute.tagPrint({deliveryOrderId:orderId})
+      .then(()=>{
+        show('列印貼箱標籤成功','success')
+        closeRow(rowMap,rowKey)
       })
   }
 
-  const deleteRow = (rowMap, rowKey) => {
-    let dialogData = {title:'delete',id:rowKey}
-    show(
-      () => <View><Text style={styles.textStyle}>取消訂單將無法復原</Text></View>,
-      () => dialogData,
-      () => {}
-    )
-    //   closeRow(rowMap, rowKey);
-    //
-    // const newData = [...data];
+  const deleteInfo = (rowMap, rowKey,orderId) => {
+    let dialogParams={title:'deleteRow',id:orderId}
+    showModal({onOk:()=>dialogParams,content: () => <View><Text style={styles.textStyle}>取消訂單將無法復原</Text></View>})
+    const newData = [...data];
+    newData.filter(item=>item.remark === '註銷')
     // const prevIndex = data.findIndex(item => item.orderId === rowKey);
     // newData.splice(prevIndex, 1);
-    // setSalesLogData(newData);
+    setSalesLogData(newData);
+    closeRow(rowMap, rowKey);
   };
 
 
@@ -74,9 +73,9 @@ export default function Basic({data,setSalesLogData,navigation}) {
     })
   }
 
-  const renderItem = ({item}) => (
+  const renderItem = ({item},rowMap) => (
     <TouchableHighlight
-      onPress={()=>enterDetail(item)}
+      onPress={()=>enterDetail(item,rowMap)}
     >
       <DataTable.Row style={styles.itemTitle}>
         <View style={styles.itemWrapper}>
@@ -89,27 +88,30 @@ export default function Basic({data,setSalesLogData,navigation}) {
     </TouchableHighlight>
   );
 
-  const renderHiddenItem = (data, rowMap) => (
+  const renderHiddenItem = (rowData, rowMap) => (
     <View style={styles.rowBack}>
       <TouchableOpacity
         style={styles.leftBtn}
-        onPress={() => printTag(rowMap, data.item.orderId)}
+        onPress={() => printTag(rowMap, rowData.item.key,rowData.item.orderId)}
       >
         <Text style={styles.leftText}>列印貼箱標籤</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.backRightBtn, styles.backRightBtnRight]}
-        onPress={() => deleteRow(rowMap, data.item.orderId)}
+        onPress={() => deleteInfo(rowMap, rowData.item.key,rowData.item.orderId)}
       >
         <Text style={styles.backTextWhite}>取消訂單</Text>
       </TouchableOpacity>
     </View>
   );
 
+
+
   return (
     <View style={styles.container}>
 
       <SwipeListView
+        closeOnScroll={true}
         useFlatList={true}
         onEndReached={fetchMore}
         data={data}

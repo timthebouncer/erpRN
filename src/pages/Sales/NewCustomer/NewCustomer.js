@@ -1,21 +1,21 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {View, Text, StyleSheet, TextInput} from 'react-native';
 
 
 const NewCustomer=(props)=>{
-  const{setNewCustomer,setNewReceiver,checkedClassId} = props
+  const{setNewCustomer,setNewReceiver} = props
 
 
   const handleInput=(key,e)=>{
     if(props.type === 'customer'){
-      setNewCustomer(f => ({ ...f, [key]: e,classesId:checkedClassId}));
+      setNewCustomer(f => ({ ...f, [key]: e}));
     }else if(props.type === 'receiver'){
       setNewReceiver(f => ({
-          ...f,classesId:checkedClassId,recipientList: {...f.recipientList,[key]: e}
-        }
-      ))
+        ...f,recipientList: {...f.recipientList,[key]: e}
+      }))
     }
   }
+
 
   return(
     <View>
