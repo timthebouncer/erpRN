@@ -31,36 +31,44 @@ const ReceiverInfo=({receiveInfo,checkedReceiver})=>{
           (receiveInfo.defaultReceiveInfo === 0) ?<Text style={[styles.textStyle,styles.marginBottom25]}>同客戶資料(預設地址)</Text>:<Text style={[styles.textStyle,styles.marginBottom25]}>同客戶資料</Text>
         }
         <View style={styles.makeRow}>
-          <Text style={[styles.textStyle,styles.marginLeftNg100,styles.marginRight80]}>{receiveInfo?.name}</Text>
-          <Text style={[styles.textStyle,styles.marginBottom25,styles.marginLeftNg50]}>{receiveInfo?.tel}</Text>
+          <Text style={[styles.textStyle,styles.marginLeftNg80,styles.marginRight100,styles.width200]}>{receiveInfo?.name}</Text>
+          <Text style={[styles.textStyle,styles.marginBottom25,styles.marginLeftNg50,styles.width100]}>{receiveInfo?.tel}</Text>
         </View>
-        <Text style={[styles.textStyle,styles.width300]}>{receiveInfo?.address}</Text>
+        <View style={[styles.makeRow]}>
+          <Text style={[styles.textStyle,styles.marginLeftNg80,styles.marginRight20]}>{receiveInfo?.postCode}</Text>
+          <Text style={[styles.textStyle,styles.width300]}>{receiveInfo?.address}</Text>
+        </View>
       </View>
     )
   }else if(checkedReceiver === 1){
     return(
       <View>
         {
-          (receiveInfo.defaultReceiveInfo === 1) ?<Text style={[styles.textStyle,styles.marginBottom25]}>同公司資料(預設地址)</Text>:<Text style={[styles.textStyle,styles.marginBottom25]}>同公司資料</Text>
+          (receiveInfo.defaultReceiveInfo === 1) ?<Text style={[styles.textStyle,styles.marginBottom25,styles.marginLeft60]}>同公司資料(預設地址)</Text>:<Text style={[styles.textStyle,styles.marginBottom25]}>同公司資料</Text>
         }
-        <Text style={styles.textStyle}>{receiveInfo?.companyAddress}</Text>
-        <Text style={styles.textStyle}>{receiveInfo?.companyTel}</Text>
-        <Text style={styles.textStyle}>{receiveInfo?.companyName}</Text>
+        <View style={[styles.makeRow]}>
+          <Text style={[styles.textStyle,styles.marginLeftNg80,styles.marginRight100,styles.width200]}>{receiveInfo?.companyName}</Text>
+          <Text style={[styles.textStyle,styles.marginBottom25,styles.marginLeftNg50,styles.width100]}>{receiveInfo?.companyTel}</Text>
+        </View>
+        <View style={[styles.makeRow]}>
+          <Text style={[styles.textStyle,styles.marginLeftNg80,styles.marginRight20]}>{receiveInfo?.companyPostCode}</Text>
+          <Text style={[styles.textStyle,styles.width300]}>{receiveInfo?.companyAddress}</Text>
+        </View>
       </View>
     )
   }else if(checkedReceiver > 1){
     return(
       <View>
         {
-          (receiveInfo.defaultReceiveInfo === checkedReceiver) ?<Text style={[styles.textStyle,styles.marginBottom25]}>(預設地址)</Text>:<Text style={styles.marginBottom25} />
+          (receiveInfo.defaultReceiveInfo === checkedReceiver) ?<Text style={[styles.textStyle,styles.marginBottom25,styles.marginLeft60]}>(預設地址)</Text>:<Text style={styles.marginBottom25} />
         }
-        <View style={styles.makeRow}>
-          <Text style={[styles.textStyle,styles.marginLeftNg100,styles.marginRight80]}>{selectedReceiveInfo?.receiver}</Text>
+        <View style={[styles.makeRow]}>
+          <Text style={[styles.textStyle,styles.marginLeftNg80,styles.marginRight100]}>{selectedReceiveInfo?.receiver}</Text>
           <Text style={[styles.textStyle,styles.marginBottom25,styles.marginLeftNg50]}>{selectedReceiveInfo?.tel}</Text>
         </View>
-        <View style={styles.makeRow}>
-          <Text style={styles.textStyle}>{selectedReceiveInfo?.postCode}</Text>
-          <Text style={styles.textStyle}>{selectedReceiveInfo?.address}</Text>
+        <View style={[styles.makeRow]}>
+          <Text style={[styles.textStyle,styles.marginLeftNg80,styles.marginRight20]}>{selectedReceiveInfo?.postCode}</Text>
+          <Text style={[styles.textStyle,styles.width300]}>{selectedReceiveInfo?.address}</Text>
         </View>
       </View>
     )
@@ -70,12 +78,17 @@ const ReceiverInfo=({receiveInfo,checkedReceiver})=>{
 
 const styles=StyleSheet.create({
   textStyle:{color:'black',fontSize:17},
-  marginRight80:{marginRight:80},
+  marginRight100:{marginRight:100},
+  marginRight20:{marginRight:20},
   marginBottom25:{marginBottom:25},
-  marginLeftNg100:{marginLeft:-100},
+  marginLeftNg80:{marginLeft:-80},
   marginLeftNg50:{marginLeft:-30},
+  marginLeft60:{marginLeft:60},
   width300:{width:300},
-  makeRow:{flexDirection:'row'}
+  width200:{width:150},
+  width100:{width:100},
+  makeRow:{flexDirection:'row'},
+  spaceAround:{justifyContent:'space-around'}
 })
 
 

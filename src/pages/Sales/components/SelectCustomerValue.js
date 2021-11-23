@@ -10,6 +10,7 @@ const SelectedCustomer=({customerList,checkedCustomer})=>{
     return(
       <View>
         <Text style={{color:'black',fontSize:17}}>{customerInfo.name}</Text>
+        <Text style={{color:'black',fontSize:17}}>{customerInfo.tel}</Text>
       </View>
     )
 

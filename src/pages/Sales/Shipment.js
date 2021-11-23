@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {ScrollView, View, Text, StyleSheet, TextInput, Dimensions} from 'react-native';
 import {Button, RadioButton} from 'react-native-paper';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -6,7 +6,6 @@ import moment from 'moment';
 import CheckBox from '@react-native-community/checkbox';
 import service from '../../apis/check';
 import {shippingRule} from '../../components/shippingFee';
-import {Icon} from 'react-native-material-ui';
 import {useContextSelector} from 'use-context-selector';
 import {orderListContext} from '../../store/orderListProvider';
 import MaskInput from 'react-native-mask-input';
@@ -161,67 +160,73 @@ const SalesShipment = ({navigation}) => {
           </View>
         ) : <></>
       }
-      <View style={[styles.makeRow, styles.makeSpace, styles.makePadding]}><Text
-        style={styles.makeFontSize}>溫層類別:</Text>
-        <RadioButton.Group onValueChange={newValue => setTemperature(newValue)}
-                           value={temperature}>
-          <View style={[styles.makeRow]}>
-            <View style={[styles.makeRow, styles.makeMRight]}>
-              <RadioButton color={'#1976D2'} value={1}/>
-              <Text style={styles.makeFontSize}>常溫</Text>
-            </View>
-            <View style={[styles.makeRow, styles.makeMRight]}>
-              <RadioButton color={'#1976D2'} value={2}/>
-              <Text style={styles.makeFontSize}>冷藏</Text>
-            </View>
-            <View style={[styles.makeRow, styles.makeMRight]}>
-              <RadioButton color={'#1976D2'} value={3}/>
-              <Text style={styles.makeFontSize}>冷凍</Text>
-            </View>
-          </View>
-        </RadioButton.Group>
-      </View>
-      <View style={[styles.makeRow, styles.makeSpace, styles.makePadding]}><Text
-        style={styles.makeFontSize}>材積單位:</Text>
-        <RadioButton.Group onValueChange={newValue => setVolume(newValue)}
-                           value={volume}>
-          <View style={[styles.makeSpace]}>
-            <View style={styles.makeRow}>
-              <View style={[styles.makeRow, styles.makeMRight3]}>
-                <RadioButton color={'#1976D2'} value={1}/>
-                <Text style={styles.makeFontSize}>60公分</Text>
-              </View>
-              <View style={styles.makeRow}>
-                <RadioButton color={'#1976D2'} value={2}/>
-                <Text style={styles.makeFontSize}>90公分</Text>
-              </View>
-            </View>
-            <View style={styles.makeRow}>
-              <View style={[styles.makeRow, styles.makeMRight2]}>
-                <RadioButton color={'#1976D2'} value={3}/>
-                <Text style={styles.makeFontSize}>120公分</Text>
-              </View>
-              {
-                temperature === 1 ? (
-                  <View style={styles.makeRow}>
-                    <RadioButton color={'#1976D2'} value={4}/>
-                    <Text style={styles.makeFontSize}>150公分</Text>
+      {
+        shipmentValue === 3 ? <></>:(
+          <View>
+            <View style={[styles.makeRow, styles.makeSpace, styles.makePadding]}><Text
+              style={styles.makeFontSize}>溫層類別:</Text>
+              <RadioButton.Group onValueChange={newValue => setTemperature(newValue)}
+                                 value={temperature}>
+                <View style={[styles.makeRow]}>
+                  <View style={[styles.makeRow, styles.makeMRight]}>
+                    <RadioButton color={'#1976D2'} value={1}/>
+                    <Text style={styles.makeFontSize}>常溫</Text>
                   </View>
-                ) : <></>
-              }
+                  <View style={[styles.makeRow, styles.makeMRight]}>
+                    <RadioButton color={'#1976D2'} value={2}/>
+                    <Text style={styles.makeFontSize}>冷藏</Text>
+                  </View>
+                  <View style={[styles.makeRow, styles.makeMRight]}>
+                    <RadioButton color={'#1976D2'} value={3}/>
+                    <Text style={styles.makeFontSize}>冷凍</Text>
+                  </View>
+                </View>
+              </RadioButton.Group>
+            </View>
+          <View style={[styles.makeRow, styles.makeSpace, styles.makePadding]}><Text
+            style={styles.makeFontSize}>材積單位:</Text>
+            <RadioButton.Group onValueChange={newValue => setVolume(newValue)}
+                               value={volume}>
+              <View style={[styles.makeSpace]}>
+                <View style={styles.makeRow}>
+                  <View style={[styles.makeRow, styles.makeMRight3]}>
+                    <RadioButton color={'#1976D2'} value={1}/>
+                    <Text style={styles.makeFontSize}>60公分</Text>
+                  </View>
+                  <View style={styles.makeRow}>
+                    <RadioButton color={'#1976D2'} value={2}/>
+                    <Text style={styles.makeFontSize}>90公分</Text>
+                  </View>
+                </View>
+                <View style={styles.makeRow}>
+                  <View style={[styles.makeRow, styles.makeMRight2]}>
+                    <RadioButton color={'#1976D2'} value={3}/>
+                    <Text style={styles.makeFontSize}>120公分</Text>
+                  </View>
+                  {
+                    temperature === 1 ? (
+                      <View style={styles.makeRow}>
+                        <RadioButton color={'#1976D2'} value={4}/>
+                        <Text style={styles.makeFontSize}>150公分</Text>
+                      </View>
+                    ) : <></>
+                  }
+                </View>
+              </View>
+            </RadioButton.Group>
+          </View>
+            <View style={[styles.makeRow, styles.makePadding, styles.makeSpace,styles.makeWidth]}><Text
+              style={[styles.makeFontSize2]}>運費金額:</Text>
+              <TextInput
+                style={styles.makeInput2}
+                value={String(shippingFee)}
+                keyboardType='numeric'
+                onChangeText={text => setShippingFee(text)}
+              />
             </View>
           </View>
-        </RadioButton.Group>
-      </View>
-      <View style={[styles.makeRow, styles.makePadding, styles.makeSpace,styles.makeWidth]}><Text
-        style={[styles.makeFontSize2]}>運費金額:</Text>
-        <TextInput
-          style={styles.makeInput2}
-          value={String(shippingFee)}
-          keyboardType='numeric'
-          onChangeText={text => setShippingFee(text)}
-        />
-      </View>
+        )
+      }
       <View style={[styles.makeRow, styles.makeSpace, styles.makePadding]}><Text
         style={styles.makeFontSize}>商品內容:</Text>
         {
@@ -283,7 +288,7 @@ const styles = StyleSheet.create({
   makeMRight10: {marginRight: 10},
   confirmBtn: {
     backgroundColor: '#0e77c1',
-    width: 200,
+    width: 190,
     height: 40,
     elevation: 0,
     borderWidth: 1,
@@ -313,6 +318,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   makeInput3: {
+    textAlignVertical: 'top',
     height: 150,
     width: 300,
     borderColor: 'white',

@@ -5,7 +5,6 @@ import { Icon,Button } from 'react-native-material-ui';
 import DateButton from '../../components/DateButton/DateButton';
 import service from '../../apis/check';
 import moment from 'moment';
-import CustomSnackBar from '../../components/SnackBar/SnackBar';
 
 
 let differentDate = [
@@ -18,7 +17,7 @@ let formatEnd = "YYYY-MM-DD 23:59:59";
 
 
 
-const RestoreLog=()=>{
+const RestoreLog=({navigation})=>{
   const[restoreLogData, setRestoreLogData]=useState([])
   const[nodata, setNodata]=useState(false)
   const [postData,setPostData]=useState(()=>{return {
@@ -71,7 +70,7 @@ const RestoreLog=()=>{
       .catch(err=>{
         console.log(err.response);
       })
-  },[])
+  },[navigation])
 
   let deviceWidth = Dimensions.get('window').width
   return (

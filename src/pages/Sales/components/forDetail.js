@@ -7,7 +7,6 @@ import {volumeMethods} from '../../../util/volumeTransfer';
 import {formatPrice} from '../../../util/formatPrice';
 
 const ForDetail=({orderDetail})=>{
-  console.log(2);
   return(
     <View>
     <View style={styles.firstPart}>
@@ -46,7 +45,7 @@ const ForDetail=({orderDetail})=>{
             <View key={item.id} style={styles.productContent}>
               <View style={styles.contentLeft}>
                 <Text style={styles.textStyle6}>{item.barcode}</Text>
-                <Text style={styles.textStyle6}>{item.alias}</Text>
+                <Text style={styles.textStyle6}>{item.alias ? item.alias:item.productName}</Text>
                 <Text style={styles.textStyle6}>{item.unit}</Text>
                 <Text style={styles.textStyle6}>建議售價:{item.price}</Text>
                 <Text style={styles.textStyle6}>備註{item.remark}</Text>

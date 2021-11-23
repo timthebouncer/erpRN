@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {View, Text, TextInput, StyleSheet, Dimensions,ScrollView} from 'react-native';
 import { Icon,Button} from 'react-native-material-ui';
 import { debounce } from "lodash";
@@ -25,7 +25,7 @@ const Restore=()=>{
       .catch(err=>{
         console.log(err);
       })
-  },500);
+  },700);
 
 
   const handleSubmit=async ()=>{
@@ -37,6 +37,7 @@ const Restore=()=>{
       })
         .then(res=>{
           console.log(res);
+          show('重新入庫成功','success')
         })
     }else {
      await service.Inventory.changeInventory({
@@ -47,6 +48,7 @@ const Restore=()=>{
         .then(res=>{
           console.log(res);
           setRestoreList({...restoreList,barcode:''})
+          show('重新入庫成功','success')
         })
     }
     inputVal.current.clear()
@@ -60,6 +62,10 @@ const Restore=()=>{
     setQuantity(1)
   }
   let deviceWidth = Dimensions.get('window').width
+
+  useEffect(()=>{
+    inputVal.current.focus()
+  },[])
 
   return (
     <ScrollView style={{backgroundColor:'#FFF0E9',width:deviceWidth}}>

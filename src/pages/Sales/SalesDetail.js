@@ -7,6 +7,8 @@ import {orderListContext} from '../../store/orderListProvider';
 import ForSales from './components/forSales';
 import ForDetail from './components/forDetail';
 import {snackBarContext} from '../../components/SnackBar/SnackBar';
+import { CommonActions } from '@react-navigation/native';
+
 
 const SalesDetail=({route,navigation})=>{
   const [orderDetail, setOrderDetail]=useState({})
@@ -14,7 +16,7 @@ const SalesDetail=({route,navigation})=>{
   const [firstChecked, setFirstChecked] = useState(1);
   const [secondChecked, setSecondChecked] = useState(1);
   const [clientInfo,setClientInfo] = useState({})
-  const {orderList, getReceiver}  = useContextSelector(orderListContext,e=>e)
+  const {orderList, getReceiver,setEditOrderDetail}  = useContextSelector(orderListContext,e=>e)
   const {params} = route.params
 
   const {show} = useContextSelector(snackBarContext,e=>e)
@@ -31,11 +33,18 @@ const SalesDetail=({route,navigation})=>{
 
 
   const submitHandler=(type)=>{
-    console.log(orderList);
      service.Distribute.addOrder(orderList)
         .then(res=>{
-          console.log(res);
           show('出貨成功','success')
+          console.log(res);
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [
+                { name: 'SalesDetail' ,params:{orderId:res.data.orderId}},
+              ],
+            })
+          );
           switch (type) {
             case 1:
               service.Distribute.printOrder(res.data.orderId,firstChecked)
@@ -74,7 +83,14 @@ const SalesDetail=({route,navigation})=>{
        })
   }
 
-  const lastPage =()=>navigation.goBack()
+
+  const lastPage =()=> {
+    if(route.params.orderId){
+      navigation.navigate({name:'Sales',params: {orderId: route.params.orderId}});
+    }else {
+      navigation.goBack();
+    }
+  }
 
 
 
@@ -85,6 +101,7 @@ const SalesDetail=({route,navigation})=>{
           const {orderDetailItemResponseList} =res.data
           setOrderItemList(orderDetailItemResponseList)
           setOrderDetail(res.data)
+          setEditOrderDetail(res.data)
         })
     }else {
       setOrderDetail(orderList)

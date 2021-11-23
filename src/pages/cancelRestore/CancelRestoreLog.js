@@ -1,18 +1,27 @@
 import React,{useState,useEffect} from 'react'
 import {StyleSheet, View, SafeAreaView, FlatList, Dimensions} from 'react-native';
 import {Text, DataTable} from 'react-native-paper';
-import { Icon,Button } from 'react-native-material-ui';
 import DateButton from '../../components/DateButton/DateButton';
 import service from '../../apis/check';
+import moment from 'moment';
 
-const CancelRestoreLog=()=>{
+
+let differentDate = [
+  moment()
+    .startOf("day"),
+  moment().endOf("day")
+];
+let formatStart = "YYYY-MM-DD 00:00:00";
+let formatEnd = "YYYY-MM-DD 23:59:59";
+
+const CancelRestoreLog=({navigation})=>{
   const[restoreLogData, setRestoreLogData]=useState([])
   const[nodata, setNodata]=useState(false)
   const [postData,setPostData]=useState(()=>{return {
     searchKey: "",
     action: "STOCK_EDIT",
-    startDate:"",
-    endDate:"",
+    startDate:(differentDate[0].format(formatStart)),
+    endDate:(differentDate[1].format(formatEnd)),
     pageNumber: 1,
     pageSize: 15,
     mark: '-'
@@ -52,13 +61,14 @@ const CancelRestoreLog=()=>{
     console.log('進畫面');
     service.Inventory.getInventoryLogList(postData)
       .then(res=>{
+        console.log(res);
         const {content} = res.data
         setRestoreLogData(content)
       })
       .catch(err=>{
         console.log(err,9999);
       })
-  },[])
+  },[navigation])
 
   let deviceWidth = Dimensions.get('window').width
 

@@ -18,8 +18,9 @@ import {Icon} from 'react-native-material-ui';
 import { Dimensions } from 'react-native'
 import {snackBarContext} from '../../components/SnackBar/SnackBar';
 import EditRemark from './components/editRemark';
+import {formatData} from './components/formatData'
 
-const Sales=({navigation})=>{
+const Sales=({navigation,route})=>{
   const[searchName, setSearchName] = useState('')
   const[classList, setClassList] = useState([])
   const[customerList, setCustomerList] = useState([])
@@ -28,12 +29,13 @@ const Sales=({navigation})=>{
   const[receiveInfo, setReceiveInfo] = useState({})
   const[checkedReceiver, setCheckedReceiver] = useState(null)
   const[originalData, setOriginalData] = useState([])
-  const[expandedId, setExpandedId] = useState('1');
+  const [expanded, setExpanded] = useState(true);
+  const [expanded2, setExpanded2] = useState(false);
+  const [expanded3, setExpanded3] = useState(false);
   const newCustomerData = useRef(null)
   const newReceiverData = useRef(null)
   const[newCustomer, setNewCustomer] = useState(()=>{return {name:"",tel:"",postCode:"",address:"",classesId:'',defaultReceiveInfo:0}})
-  const[newReceiver, setNewReceiver] = useState(()=>{return {classesId:"",clientId:"",defaultReceiveInfo:0,recipientList:{id: "", receiver: "", tel: "", postCode: "", address: ""}} })
-  const[productSales, setProductSales] = useState({})
+  const[newReceiver, setNewReceiver] = useState(()=>{return {classesId:"",clientId:"",defaultReceiveInfo:0,recipientList:[{id: "", receiver: "", tel: "", postCode: "", address: ""}]} })
   const[orderItemResponseList, setOrderItem] = useState([])
   const currentOrderItemRef = useRef(null)
   const [discountVal, setDiscountVal] = useState(0)
@@ -43,11 +45,30 @@ const Sales=({navigation})=>{
   const swipeRef = useRef(null)
   const showModal  = useContextSelector(dialogContext,e=>e.showModal)
   const show  = useContextSelector(snackBarContext,e=>e.show)
-  const [setOrderList, getReceiver]  = useContextSelector(orderListContext,e=>[e.setOrderList])
+  const [setOrderList, getReceiver,editOrderDetail]  = useContextSelector(orderListContext,e=>[e.setOrderList,e.getReceiver,e.editOrderDetail])
 
   const onSave = async () => {
     if(currentOrderItemRef.current === null)return
-    await setOrderItem(e => [...e, currentOrderItemRef.current])
+    // await setOrderItem(e => [...e, currentOrderItemRef.current])
+
+    let arrLength = orderItemResponseList.length
+    console.log(arrLength);
+
+
+    if (arrLength) {
+      let arr = [...orderItemResponseList]
+      for (let i = 0; i < arrLength; i++) {
+        if (arr[i].barcode === currentOrderItemRef.current.barcode) {
+          arr[i].quantity += currentOrderItemRef.current.quantity;
+        } else {
+          arr.push(currentOrderItemRef.current);
+        }
+      }
+      setOrderItem(arr);
+    } else {
+      setOrderItem([currentOrderItemRef.current])
+    }
+
     setReadyToGo(true)
     currentOrderItemRef.current = null
   }
@@ -89,15 +110,21 @@ const Sales=({navigation})=>{
         })
 
     }else if(newReceiverData.current !== null && type === 'receiver'){
+
+      if(!newReceiverData.current.recipientList[0].receiver) return
+
+      let length = newReceiverData.current.recipientList.length
       newReceiverData.current.classesId = checkedClassId
       newReceiverData.current.clientId = checkedCustomer
-      newReceiverData.current.defaultReceiveInfo = checkedReceiver
+      newReceiverData.current.defaultReceiveInfo = parseInt(length) + 1
 
-      if(!newReceiverData.current.name) return
       service.Customer.update(newReceiverData.current)
         .then(res=>{
           console.log(res);
-          newReceiverData.current = null
+          if(res.status === 200){
+            show(res.data,'success')
+            newReceiverData.current = null
+          }
         })
     }
   }
@@ -109,19 +136,23 @@ const Sales=({navigation})=>{
 
 
   const {quantity, total} = useMemo(() => {
-    const result = { quantity: 0, total: 0 }
-    orderItemResponseList.forEach((e) => {
-      result.quantity += e.quantity
-      result.total += ['公斤','公克','台斤'].includes(e.unit) ? e.dealPrice * e.weight : e.dealPrice * e.quantity
-    })
-    return result
+    const result = { quantity: 0, total: 0, amount:0 }
+    if(orderItemResponseList){
+      orderItemResponseList.forEach((e) => {
+        result.quantity += e.quantity ? e.quantity : e.amount
+        result.total += ['公斤','公克','台斤'].includes(e.unit) ? e.clientPrice ? e.clientPrice*e.weight.toFixed(3):e.dealPrice * e.weight.toFixed(3) :
+          e.clientPrice ? e.clientPrice * (e.quantity ? e.quantity:e.amount) : e.dealPrice * (e.quantity ? e.quantity:e.amount)
+      })
+      return result
+    }
   }, [orderItemResponseList])
 
   const newCustomerOrReceiver = (type) =>{
     showModal({ type, onOk:()=>onConfirm(type), content: () => <View>
         {
           <
-            NewCustomer  setNewCustomer={setNewCustomer} setNewReceiver={setNewReceiver} type={type}
+            NewCustomer  setNewCustomer={setNewCustomer} setNewReceiver={setNewReceiver} type={type} receiveInfo={receiveInfo} checkedClassId={checkedClassId}
+                         checkedCustomer={checkedCustomer}
           />
         }
       </View>})
@@ -144,15 +175,8 @@ const Sales=({navigation})=>{
       await setCheckedCustomer('')
       await setReceiveInfo({})
       await setReceiveList([{id:0,receiver:'同客戶資料'},{id:1,receiver:'同公司資料'}])
-      setExpandedId('2')
-      service.Customer.getClientList(id)
-        .then(res=>{
-          setCustomerList(res.data)
-          setOriginalData(res.data)
-        })
-        .catch(err=>{
-          console.log(err);
-        })
+      await setExpanded(false)
+      await setExpanded2(true)
     }else if(type === "customer"){
       await setReceiveList([{id:0,receiver:'同客戶資料'},{id:1,receiver:'同公司資料'}])
       await setCheckedCustomer(id)
@@ -162,10 +186,10 @@ const Sales=({navigation})=>{
       //預設收件ID
       await setCheckedReceiver(customerInfo.defaultReceiveInfo)
       await setReceiveList(prev=>[...prev,...customerInfo.recipientList])
-      setExpandedId(0)
+      await setExpanded2(false)
     }else if(type === "receiver"){
       await setCheckedReceiver(id)
-      setExpandedId(0)
+      await setExpanded3(false)
     }
   }
 
@@ -173,22 +197,40 @@ const Sales=({navigation})=>{
     if(!searchName){
       setCustomerList(originalData)
     }else {
-      let newData = customerList.filter(item=>item.name.includes(searchName))
+      let newData = customerList.filter(item=>{
+        if(!item.name){
+          return ''
+        } else {
+         return item.name.includes(searchName)
+        }
+      })
       setCustomerList(newData)
     }
   }
 
-  const onChangeList=(e)=>{
-    setExpandedId(e)
+  const handleExpanded=(type)=>{
+    switch (type) {
+      case 1:
+        setExpanded(!expanded)
+        break;
+      case 2:
+        setExpanded2(!expanded2)
+        break;
+      case 3:
+        setExpanded3(!expanded3)
+        break;
+    }
   }
 
   const scanBarcode = debounce((text) =>{
     service.Commodity.getProductSalesByCode({barcodes: [text],clientId:checkedCustomer})
       .then(res=>{
-        if(res.status !== 200 || res.data.length === 0) return
-        setProductSales(res.data)
-        addProductSales('sales',res.data)
-        inputRef.current.clear()
+        if(res.data.length === 0) {
+          show('已無庫存，請重新選擇','error')
+        }else if(res.status === 200){
+          addProductSales('sales',res.data)
+          inputRef.current.clear()
+        }
       })
       .catch(err=>{
         console.log(err);
@@ -208,13 +250,35 @@ const Sales=({navigation})=>{
     setOrderItem(newOrderList)
   }
 
+  const clientList=(id)=>{
+    service.Customer.getClientList(id)
+      .then(res=>{
+        setCustomerList(res.data)
+        setOriginalData(res.data)
+        setCheckedCustomer(editOrderDetail.clientId)
+        pushReceiverList(res.data)
+      })
+      .catch(err=>{
+        console.log(err);
+      })
+  }
+
+  const pushReceiverList=(customerList)=>{
+    let customerInfo = customerList.find(item=>item.id === editOrderDetail.clientId)
+    setReceiveInfo(customerInfo)
+    setCheckedReceiver(customerInfo.defaultReceiveInfo)
+    setReceiveList(prev=>[...prev,...customerInfo.recipientList])
+    setOrderItem(editOrderDetail.orderDetailItemResponseList)
+  }
+
   const nextStep = () => {
     let newData = []
     orderItemResponseList.forEach(item=>{
       newData.push({
-        amount: item.quantity,
+        alias:item.alias?item.alias:item.productName,
+        amount: item.quantity ? item.quantity:item.amount ,
         barcode: item.barcode,
-        clientPrice: item.clientPrice ? item.clientPrice.toFixed(2) : item.dealPrice.toFixed(2),
+        clientPrice: item.clientPrice ? item.clientPrice.toFixed(2) :Number(item.dealPrice).toFixed(2),
         depotId: item.depotId,
         discount: parseInt(discountVal),
         price: item.price.toFixed(2),
@@ -242,12 +306,27 @@ const Sales=({navigation})=>{
         console.log(err);
       })
   },[])
+
+  useEffect(()=>{
+    if(!checkedClassId && !checkedCustomer) return
+   clientList(checkedClassId)
+  },[checkedClassId])
+
+  useEffect(()=>{
+    if(!route.params) return
+    console.log(editOrderDetail);
+    setCheckedClassId(editOrderDetail.classId)
+    clientList(editOrderDetail.classId)
+    setReadyToGo(true)
+  },[route])
+
   let deviceWidth = Dimensions.get('window').width
 
   return <ScrollView style={{backgroundColor: '#FFF0E9', width:deviceWidth}}>
-    <List.AccordionGroup expandedId={expandedId} onAccordionPress={(e)=>onChangeList(e)} >
-      <Text style={styles.productTitle}>客戶資訊</Text>
-      <List.Accordion style={styles.firstPart} title="客戶類別:" id="1"
+      <List.Accordion
+                      onPress={()=>handleExpanded(1)}
+                      expanded={expanded}
+                      style={styles.firstPart} title="客戶類別:"
                       titleStyle={styles.accordion}
                       descriptionStyle={{color:'red',position:'relative', left:'30%',top:-21}}
                       description={<SelectedVal classList={classList} checkedClassId={checkedClassId} />}
@@ -256,18 +335,18 @@ const Sales=({navigation})=>{
           classList && classList.map(item=>{
             return(
                 <View style={styles.radioWrapper}  key={item.id}>
-                  <RadioButton value={item.id}
-                               color={'#1976D2'}
-                               status={ checkedClassId === item.id ? 'checked' : 'unchecked' }
-                               onPress={() => handleChange(item.id,"class")}
-                  />
-                  <Text style={styles.textStyle}>{item.className}</Text>
+                  <RadioButton.Item label={item.className} status={ checkedClassId === item.id ? 'checked' : 'unchecked' } color={'#1976D2'}
+                                    style={{width:'70%'}}
+                                    labelStyle={{textAlign:'left',paddingLeft:10,fontSize:20}}
+                                    value={item.id} position={'leading'} onPress={() => handleChange(item.id,"class")} />
                 </View>
             )
           })
         }
       </List.Accordion>
-      <List.Accordion style={styles.secondPart} title="客戶資料" id="2"
+      <List.Accordion style={styles.secondPart} title="客戶資料"
+                      onPress={()=>handleExpanded(2)}
+                      expanded={expanded2}
                       titleStyle={styles.accordion}
                       descriptionStyle={{color:'red',position:'relative', left:'30%',top:-21}}
                       description={<SelectedCustomer customerList={customerList} checkedCustomer={checkedCustomer} />}
@@ -286,12 +365,10 @@ const Sales=({navigation})=>{
             customerList && customerList.map(item=>{
               return(
                 <View style={styles.radioWrapper}  key={item.id}>
-                  <RadioButton value={item.id}
-                               color={'#1976D2'}
-                               status={ checkedCustomer === item.id ? 'checked' : 'unchecked' }
-                               onPress={() => handleChange(item.id,"customer")}
-                  />
-                  <Text style={styles.textStyle}>{item.name}</Text>
+                  <RadioButton.Item label={formatData('customer',item)} status={ checkedCustomer === item.id ? 'checked' : 'unchecked' } color={'#1976D2'}
+                                    style={{width:'70%'}}
+                                    labelStyle={{textAlign:'left',paddingLeft:10,fontSize:20}}
+                                    value={item.id} position={'leading'} onPress={() => handleChange(item.id,"customer")} />
                 </View>
               )
             })
@@ -306,7 +383,9 @@ const Sales=({navigation})=>{
         </View>
       </List.Accordion>
       <View style={{backgroundColor:'white'}}>
-        <List.Accordion style={styles.thirdPart} title="收件資料" id="3"
+        <List.Accordion style={styles.thirdPart} title="收件資料"
+                        onPress={()=>handleExpanded(3)}
+                        expanded={expanded3}
                         titleStyle={styles.accordion2}
                         descriptionStyle={{position:'relative', left:'30%',top:-21}}
                         description={<ReceiverInfo receiveInfo={receiveInfo} checkedReceiver={checkedReceiver} />}
@@ -315,12 +394,11 @@ const Sales=({navigation})=>{
             receiveList.map((item,idx)=>{
               return(
                 <View style={styles.radioWrapper}  key={item.id}>
-                  <RadioButton value={item.id}
-                               color={'#1976D2'}
-                               status={ checkedReceiver === idx? 'checked' : 'unchecked' }
-                               onPress={() => handleChange(idx,"receiver")}
-                  />
-                  <Text style={styles.textStyle}>{item.receiver}</Text>
+                  <RadioButton.Item label={formatData('receiver',item)}
+                                    status={ checkedReceiver === idx? 'checked' : 'unchecked' } color={'#1976D2'}
+                                    style={{width:'90%'}}
+                                    labelStyle={{textAlign:'left',paddingLeft:10,paddingRight:10,fontSize:18,width:'100%'}}
+                                    value={item.id} position={'leading'} onPress={() => handleChange(idx,"receiver")} />
                 </View>
               )
             })
@@ -333,7 +411,6 @@ const Sales=({navigation})=>{
           </View>
         </List.Accordion>
       </View>
-    </List.AccordionGroup>
     <View>
       <Text style={styles.productTitle}>輸入商品</Text>
       <View style={styles.productInput}>
@@ -346,7 +423,7 @@ const Sales=({navigation})=>{
       {
         orderItemResponseList.length > 0 && orderItemResponseList.map((item,index)=>{
           return(
-              <SwipeRow ref={swipeRef} style={{marginTop:-10}} leftOpenValue={150} rightOpenValue={-130} key={item?.depotId} >
+              <SwipeRow ref={swipeRef} style={{marginTop:-10}} leftOpenValue={150} rightOpenValue={-130} key={index} >
                 <View style={styles.standaloneRowBack}>
                   <View style={styles.leftDelete}>
                     <Button onPress={()=>openEditRemark('remark',item,index)}><Text style={styles.backTextWhite}>編輯備註</Text></Button>
@@ -358,7 +435,7 @@ const Sales=({navigation})=>{
                 <View style={styles.productContent}>
                 <View style={styles.contentLeft}>
                   <Text style={styles.textStyle6}>{item?.barcode}</Text>
-                  <Text style={styles.textStyle6}>{item?.alias}</Text>
+                  <Text style={styles.textStyle6}>{item.alias ? item.alias:item.productName}</Text>
                   <Text style={styles.textStyle6}>{item?.unit}</Text>
                   <Text style={styles.textStyle6}>建議售價:{item?.price}</Text>
                   <Text style={styles.textStyle6}>備註{item?.remark}</Text>
@@ -367,23 +444,39 @@ const Sales=({navigation})=>{
                   <Text style={styles.textStyle6}>數量</Text>
                   {
                     ['公斤','公克','台斤'].includes(item?.unit) ? (
-                      <Text style={styles.textStyle6}>{item?.weight}</Text>
+                      <Text style={[styles.textStyle6]}>{item?.weight.toFixed(3)}</Text>
                     ):(
                       <Counter quantity={item.quantity} setQuantity={onChangeModalValue(index,'quantity')} />
-                      // <Text style={styles.textStyle6}>{item?.quantity}</Text>
                     )
                   }
-                  <Text style={styles.textStyle6}>單價${formatPrice(item.dealPrice)}</Text>
+                  <View style={styles.makeRow}>
+                    <Text style={[styles.textStyle6,styles.marginRight15,styles.marginTop3]}>單價$</Text>
+                    <TextInput style={styles.makeInput3}
+                               value={String(item.clientPrice ? item.clientPrice:item.dealPrice)}
+                               keyboardType='numeric'
+                               onChangeText={(e)=>setOrderItem(f => {
+                                 const f2 = f.slice()
+                                 item.clientPrice ? f2[index].clientPrice = e:f2[index].dealPrice = e
+                                 return f2
+                               })}
+                    />
+                  </View>
                   <Text style={styles.textStyle6}>小計
                     {
                       ['公斤','公克','台斤'].includes(item?.unit) ? (
                         <Text>
-                          ${formatPrice((item.dealPrice*item.weight).toFixed(2))}
+                          ${formatPrice(( item.clientPrice ?  (item.clientPrice*item.weight).toFixed(3):(item.dealPrice*item.weight).toFixed(3)))}
                         </Text>
                       ):(
-                        <Text>
-                          ${formatPrice((item.dealPrice*item.quantity).toFixed(2))}
-                        </Text>
+                        item.clientPrice ?  (
+                            <Text>
+                              ${formatPrice((item.clientPrice* (item.quantity ? item.quantity:item.amount)).toFixed(2))}
+                            </Text>
+                          ):(
+                          <Text>
+                            ${formatPrice((item.dealPrice*(item.quantity ? item.quantity:item.amount)).toFixed(2))}
+                          </Text>
+                        )
                       )
                     }
                   </Text>
@@ -394,7 +487,8 @@ const Sales=({navigation})=>{
         })
       }
       {
-        orderItemResponseList.length ? (
+        orderItemResponseList.length ?
+          (
           <View>
             <View style={styles.checkoutWrapper}>
               <View>
@@ -435,7 +529,9 @@ const styles=StyleSheet.create({
   firstPart:{height:75,justifyContent:'center',backgroundColor: 'white',paddingTop: 10},
   secondPart:{height:75,justifyContent:'center',backgroundColor: 'white',paddingTop: 10},
   thirdPart:{height:200,justifyContent:'center',backgroundColor: 'white'},
-
+  makeRow:{flexDirection:'row',marginTop:15},
+  marginRight15:{marginRight:15},
+  marginTop3:{marginTop:3},
   standaloneRowBack: {
     alignItems: 'center',
     backgroundColor: '#8BC645',
@@ -476,7 +572,7 @@ const styles=StyleSheet.create({
   accordion:{fontSize:18,marginTop:20,color:'black'},
   accordion2:{fontSize:18,marginTop:-50,color:'black'},
 
-  radioWrapper:{flexDirection:'row',padding:10,backgroundColor: 'white'},
+  radioWrapper:{padding:10,backgroundColor: 'white', width:'100%'},
   textStyle:{fontSize:18, lineHeight:33,marginLeft:30},
   textStyle2:{fontSize:26,color:'#BDBDBD'},
   textStyle3:{fontSize:40,color:'#aea9a9'},
@@ -484,6 +580,9 @@ const styles=StyleSheet.create({
   textStyle5:{fontSize:28,marginBottom:20},
   textStyle6:{fontSize:18,marginBottom:20},
   textStyle7:{fontSize:18,lineHeight:25},
+  width100:{width:200},
+  width50:{width:85},
+  lineHeight50:{alignItems:'center'},
   productTitle:{backgroundColor:'#BBBBBB',height:30, marginBottom:10, borderRadius: 5,fontSize:19},
   productInput:{flexDirection:'row',justifyContent:'space-around',marginTop:15,marginBottom:25},
   productContent:{flex:1, flexDirection:'row', justifyContent:'space-between', padding:15, backgroundColor:'white',height:255,width:400,marginLeft: 5,
@@ -547,6 +646,21 @@ const styles=StyleSheet.create({
     fontSize:20,
     textAlign:'center',
     alignItems:'center',
+    paddingTop: 0,
+    paddingBottom: 0
+  },
+  makeInput3: {
+    height: 33,
+    width: 130,
+    borderColor: 'black',
+    borderWidth: 1,
+    backgroundColor: 'transparent',
+    borderRadius: 5,
+    fontSize:20,
+    textAlign:'center',
+    alignItems:'center',
+    paddingTop: 0,
+    paddingBottom: 0
   },
   discountWrapper:{marginBottom:15}
 })

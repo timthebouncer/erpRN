@@ -94,7 +94,7 @@ function CustomDialog() {
             </View>
           </Modal>
         ): type === 'sales' ? (
-          <Modal visible={visible} onDismiss={onCancel} style = {{backgroundColor: '#FFF0E9', padding: 20,marginTop:50, height:550}}>
+          <Modal visible={visible} onDismiss={onCancel} style = {{backgroundColor: '#FFF0E9', padding: 20,marginTop:30}}>
             {Content}
             <View style={{flexDirection:'row', justifyContent:'space-around'}}>
               <Button onPress={onCancel} mode="contained" style={styles.cancelBtn}><Text style={{color:'black'}}>取消</Text></Button>

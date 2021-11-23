@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {View, Text, TextInput, StyleSheet, Dimensions, ScrollView} from 'react-native';
 import { Button,Icon } from 'react-native-material-ui';
 import { debounce } from "lodash";
@@ -23,7 +23,7 @@ const CancelRestore=()=>{
       .catch(err=>{
         console.log(err);
       })
-  },500);
+  },700);
 
 
   const handleSubmit=()=>{
@@ -33,23 +33,28 @@ const CancelRestore=()=>{
         barcode:canCelRestoreList.barcode,
         amount:canCelRestoreList.amount - 1
       })
-        .then(res=>{
-          console.log(res);
+        .then(()=>{
+          show('取消入庫成功','success')
+          inputVal.current.clear()
+          setQuantity(1)
+          setCancelRestoreList({})
         })
     }else {
+      // console.log(canCelRestoreList.amount-quantity);
       service.Inventory.changeInventory({
         id:canCelRestoreList.inventoryId,
         barcode:canCelRestoreList.barcode,
-        amount:canCelRestoreList.amount + quantity
+        amount:canCelRestoreList.amount - quantity
       })
-        .then(res=>{
+        .then((res)=>{
           console.log(res);
           setCancelRestoreList({...canCelRestoreList,barcode:''})
+          show('取消入庫成功','success')
+          inputVal.current.clear()
+          setQuantity(1)
+          setCancelRestoreList({})
         })
     }
-    inputVal.current.clear()
-    setQuantity(1)
-    setCancelRestoreList({})
   }
 
   const handleClear=()=>{
@@ -57,6 +62,11 @@ const CancelRestore=()=>{
     setQuantity(1)
   }
   let deviceWidth = Dimensions.get('window').width
+
+  useEffect(()=>{
+    inputVal.current.focus()
+  },[])
+
   return (
     <ScrollView style={{backgroundColor:'#FFF0E9',width:deviceWidth}}>
       <View><Text style={styles.textStyle1}>輸入商品</Text></View>

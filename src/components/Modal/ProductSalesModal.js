@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, TextInput} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
+import {View, Text, StyleSheet, TextInput,ScrollView} from 'react-native';
 import {Picker} from '@react-native-picker/picker'
 import {Button} from 'react-native-paper';
 import Counter from '../Counter/Counter';
@@ -12,6 +12,7 @@ const ProductSalesModal=(props)=>{
   const[quantity, setQuantity] = useState(1)
   const [newProductList,setNewProductList] = useState({})
   const [depotList,setDepotList] = useState([])
+  const inputRef = useRef(null)
 
   const handleInput=(key,e)=>{
     itemRef.current[key] = e
@@ -22,10 +23,15 @@ const ProductSalesModal=(props)=>{
     itemRef.current.quantity = ['公斤','公克','台斤'].includes(newProductList.unit) ? 1:quantity
   }
 
+  const setProductList =()=>{
+   itemRef.current = newProductList
+   itemRef.current.quantity = ['公斤','公克','台斤'].includes(newProductList.unit) ? 1:quantity
+  }
 
   useEffect(()=>{
       const newProductSales = [...productSales]
       setNewProductList({...newProductSales[0]})
+
       const depotList = newProductSales.map(item => {
         let newObject = {}
         newObject.depotId = item.depotId
@@ -33,9 +39,12 @@ const ProductSalesModal=(props)=>{
         return newObject
       })
       setDepotList(depotList)
-      itemRef.current = newProductList
-      itemRef.current.quantity = ['公斤','公克','台斤'].includes(newProductList.unit) ? 1:quantity
+
+    inputRef.current.focus()
+
   },[])
+
+  useEffect(setProductList,[newProductList])
 
   const onChange=(e)=>{
     setQuantity(e)
@@ -43,7 +52,8 @@ const ProductSalesModal=(props)=>{
   }
 
   return(
-    <View>
+    <ScrollView>
+      <View style={{marginTop:10}}>
               <View style={styles.rowWrapper}>
                 <Text style={styles.makeText}>商品條碼</Text>
                 <Text style={styles.makeText}>{newProductList?.barcode}</Text>
@@ -52,22 +62,24 @@ const ProductSalesModal=(props)=>{
                 <Text style={styles.makeText}>商品名稱</Text>
                 <Text style={styles.makeText}>{newProductList?.alias ? newProductList?.alias: newProductList?.productName}</Text>
               </View>
-              <View style={styles.rowWrapper}>
-                <Text style={styles.makeText}>庫存倉庫</Text>
-                <Picker
-                  selectedValue={selectedValue}
-                  style={{ height: 50, width: 160 }}
-                  onValueChange={(itemValue) => onChangeSelect(itemValue)}
-                >
-                  {
-                    depotList.map(item =>{
-                      return(
-                        <Picker.Item style={{width:150}} key={item.depotId} label={item.depotName} value={item.depotId} />
-                      )
-                    })
-                  }
-                </Picker>
-              </View>
+                {
+                  depotList.length > 1 && <View style={styles.rowWrapper}>
+                    <Text style={styles.makeText}>庫存倉庫</Text>
+                    <Picker
+                      selectedValue={selectedValue}
+                      style={{ height: 50, width: 160 }}
+                      onValueChange={(itemValue) => onChangeSelect(itemValue)}
+                    >
+                      {
+                        depotList.map(item =>{
+                          return(
+                            <Picker.Item style={{width:150}} key={item.depotId} label={item.depotName} value={item.depotId} />
+                          )
+                        })
+                      }
+                    </Picker>
+                  </View>
+                }
               <View style={styles.rowWrapper}>
                 <Text style={styles.makeText}>單位</Text>
                 <Text style={styles.makeText}>{newProductList?.unit}</Text>
@@ -76,15 +88,16 @@ const ProductSalesModal=(props)=>{
                 <Text style={styles.makeText}>數量</Text>
                 {
                   ['公斤','公克','台斤'].includes(newProductList.unit) ? (
-                    <Text>{newProductList.weight}</Text>
+                    <Text style={styles.makeText}>{newProductList.weight.toFixed(3)}</Text>
                   ):<Counter quantity={quantity} setQuantity={e=>onChange(e)} />
                 }
               </View>
               <View style={styles.rowWrapper}>
                 <Text style={styles.makeText}>備註</Text>
-                <TextInput multiline onChangeText={(e)=>handleInput('remark',e)} style={styles.textArea}/>
+                <TextInput ref={inputRef} multiline onChangeText={(e)=>handleInput('remark',e)} style={styles.textArea}/>
               </View>
-    </View>
+      </View>
+    </ScrollView>
   )
 }
 
@@ -92,6 +105,7 @@ const styles = StyleSheet.create({
   rowWrapper:{flexDirection:'row', justifyContent:'space-between',marginBottom:35},
   makeText: {fontSize: 20},
   textArea:{
+    textAlignVertical: 'top',
     height: 100,
     width:250,
     borderColor: 'white',

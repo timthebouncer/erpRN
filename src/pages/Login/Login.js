@@ -44,8 +44,8 @@ const Login = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.makeTitle}><Text style={styles.makeTextStyle2}>盤點機登入</Text></View>
-      <View style={styles.makeRow}>
-        <Icon name="person" style={styles.makeIcon} />
+      <View style={[styles.makeRow,styles.height40]}>
+        <Icon name="person" size={30} style={styles.makeIcon} />
         <TextInput
           label="帳號"
           name='username'
@@ -55,7 +55,7 @@ const Login = ({ navigation }) => {
         />
       </View>
       <View style={styles.makeRow}>
-        <Icon name="lock" style={styles.makeIcon}/>
+        <Icon name="lock" size={30} style={styles.makeIcon}/>
         <TextInput
           label="密碼"
           name='password'
@@ -86,23 +86,17 @@ const styles = StyleSheet.create({
     padding:10,
     borderColor:'black',
     backgroundColor:'white'
-    // shadowColor: "#000",
-    // shadowOffset: {
-    //   width: 0,
-    //   height: 3,
-    // },
-    // shadowOpacity: 0.27,
-    // shadowRadius: 4.65,
   },
+  height40:{height:40},
   makeRow:{flexDirection:'row'},
   inputWidth:{
     width: 280
   },
   makeTitle:{width:400,height:70,backgroundColor: 'black',justifyContent: 'center',alignItems: 'center',marginTop: -100},
-  makeIcon:{lineHeight: 70},
+  makeIcon:{height:70,marginRight:20,lineHeight: 70},
   confirmBtn: {
-    backgroundColor: '#E8E8E8',
-    height: 50,
+    backgroundColor: '#f9f5f5',
+    height: 55,
     width:250,
     borderWidth: 1,
     // borderColor: 'white',

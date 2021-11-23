@@ -1,32 +1,37 @@
-import React, {useEffect} from 'react';
-import {View, Text, StyleSheet, TextInput} from 'react-native';
+import React, {useEffect, useRef} from 'react';
+import {View, Text, StyleSheet, TextInput,ScrollView} from 'react-native';
 
 
 const NewCustomer=(props)=>{
-  const{setNewCustomer,setNewReceiver} = props
-
+  const{setNewCustomer,setNewReceiver,receiveInfo} = props
+  const inputRef = useRef(null)
+  const newValue = useRef({id:'',receiver: "",tel: "",postCode: "",address: ""})
 
   const handleInput=(key,e)=>{
     if(props.type === 'customer'){
       setNewCustomer(f => ({ ...f, [key]: e}));
     }else if(props.type === 'receiver'){
+      newValue.current[key] = e
       setNewReceiver(f => ({
-        ...f,recipientList: {...f.recipientList,[key]: e}
+        ...f,recipientList: [...receiveInfo.recipientList, newValue.current]
       }))
     }
   }
 
+  useEffect(()=>{
+    inputRef.current.focus()
+  })
+
 
   return(
-    <View>
+    <ScrollView>
     {
       props.type === 'customer' ? (
         <>
-        <View style={{alignItems:'center', marginTop:-50,marginBottom:30}}><Text style={{fontSize:30}}>新增客戶資料</Text></View>
-        <View>
+          <View style={{alignItems:'center', marginTop:10,marginBottom:30}}><Text style={{fontSize:30}}>新增客戶資料</Text></View>
           <View style={{flexDirection:'row', justifyContent:'space-between',marginBottom:50}}>
             <Text style={styles.infoTitle}>客戶名稱</Text>
-            <TextInput onChangeText={(e)=>handleInput('name',e)} style={styles.input} />
+            <TextInput ref={inputRef} onChangeText={(e)=>handleInput('name',e)} style={styles.input} />
           </View>
           <View style={{flexDirection:'row', justifyContent:'space-between',marginBottom:50}}>
             <Text style={styles.infoTitle}>客戶電話</Text>
@@ -40,13 +45,12 @@ const NewCustomer=(props)=>{
             <Text style={styles.infoTitle}>聯絡地址</Text>
             <TextInput onChangeText={(e)=>handleInput('address',e)} style={styles.input}/>
           </View>
-        </View></>):(
+        </>):(
           <>
-          <View style={{alignItems:'center', marginTop:-50,marginBottom:30}}><Text style={{fontSize:30}}>新增收件資料</Text></View>
-          <View>
+          <View style={{alignItems:'center', marginTop:10,marginBottom:30}}><Text style={{fontSize:30}}>新增收件資料</Text></View>
           <View style={{flexDirection:'row', justifyContent:'space-between',marginBottom:50}}>
           <Text style={styles.infoTitle}>收件人</Text>
-          <TextInput onChangeText={(e)=>handleInput('receiver',e)} style={styles.input} />
+          <TextInput ref={inputRef} onChangeText={(e)=>handleInput('receiver',e)} style={styles.input} />
           </View>
           <View style={{flexDirection:'row', justifyContent:'space-between',marginBottom:50}}>
           <Text style={styles.infoTitle}>收件電話</Text>
@@ -60,11 +64,10 @@ const NewCustomer=(props)=>{
           <Text style={styles.infoTitle}>收件地址</Text>
           <TextInput onChangeText={(e)=>handleInput('address',e)} style={styles.input}/>
           </View>
-          </View>
           </>
       )
     }
-    </View>
+    </ScrollView>
   )
 }
 

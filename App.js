@@ -56,8 +56,8 @@ const App = () => {
                 <Stack.Screen name="SalesShipment" component={SalesShipment} options={{headerTitle: '出貨資料'}}/>
                 <Stack.Screen name="Restore" component={Restore} options={{headerTitle: '重新入庫'}}/>
                 <Stack.Screen name="RestoreLog" component={RestoreLog} options={{headerTitle: '重新入庫清單'}}/>
-                <Stack.Screen name="CancelRestore" component={CancelRestore} options={{headerTitle: '取消入庫'}}/>
                 <Stack.Screen name="CancelRestoreLog" component={CancelRestoreLog} options={{headerTitle: '取消入庫清單'}}/>
+                <Stack.Screen name="CancelRestore" component={CancelRestore} options={{headerTitle: '取消入庫'}}/>
               </Stack.Navigator>
             </NavigationContainer>
           </OrderListProvider>

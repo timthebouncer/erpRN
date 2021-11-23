@@ -7,15 +7,16 @@ const Counter=({setQuantity,quantity})=>{
       value={quantity}
       onChange={value => setQuantity(value)}
       onLimitReached={(isMax,msg) => console.log(isMax,msg)}
-      totalWidth={240}
+      totalWidth={220}
       totalHeight={50}
       iconSize={25}
       valueType='integer'
       rounded
-      textColor='#B0228C'
-      iconStyle={{ color: 'white' }}
-      rightButtonBackgroundColor='#EA3788'
-      leftButtonBackgroundColor='#E56B70'
+      textColor='black'
+      containerStyle={{backgroundColor:'white'}}
+      iconStyle={{ color: 'black' }}
+      rightButtonBackgroundColor='white'
+      leftButtonBackgroundColor='white'
       minValue={1}
       initValue={quantity}
     />
