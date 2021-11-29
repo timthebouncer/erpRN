@@ -28,39 +28,39 @@ const NewCustomer=(props)=>{
     {
       props.type === 'customer' ? (
         <>
-          <View style={{alignItems:'center', marginTop:10,marginBottom:30}}><Text style={{fontSize:30}}>新增客戶資料</Text></View>
-          <View style={{flexDirection:'row', justifyContent:'space-between',marginBottom:50}}>
+          <View style={[styles.itemsCenter,styles.mt10,styles.mb30]}><Text style={styles.text30}>新增客戶資料</Text></View>
+          <View style={[styles.flexRow,styles.spaceBetween,styles.mb50]}>
             <Text style={styles.infoTitle}>客戶名稱</Text>
             <TextInput ref={inputRef} onChangeText={(e)=>handleInput('name',e)} style={styles.input} />
           </View>
-          <View style={{flexDirection:'row', justifyContent:'space-between',marginBottom:50}}>
+          <View style={[styles.flexRow,styles.spaceBetween,styles.mb50]}>
             <Text style={styles.infoTitle}>客戶電話</Text>
             <TextInput onChangeText={(e)=>handleInput('tel',e)} style={styles.input}/>
           </View>
-          <View style={{flexDirection:'row', justifyContent:'space-between',marginBottom:50}}>
+          <View style={[styles.flexRow,styles.spaceBetween,styles.mb50]}>
             <Text style={styles.infoTitle}>郵遞區號</Text>
             <TextInput onChangeText={(e)=>handleInput('postCode',e)} style={styles.input}/>
           </View>
-          <View style={{flexDirection:'row', justifyContent:'space-between',marginBottom:50}}>
+          <View style={[styles.flexRow,styles.spaceBetween,styles.mb50]}>
             <Text style={styles.infoTitle}>聯絡地址</Text>
             <TextInput onChangeText={(e)=>handleInput('address',e)} style={styles.input}/>
           </View>
         </>):(
           <>
-          <View style={{alignItems:'center', marginTop:10,marginBottom:30}}><Text style={{fontSize:30}}>新增收件資料</Text></View>
-          <View style={{flexDirection:'row', justifyContent:'space-between',marginBottom:50}}>
+          <View style={[styles.itemsCenter,styles.mt10,styles.mb30]}><Text style={styles.text30}>新增收件資料</Text></View>
+          <View style={[styles.flexRow,styles.spaceBetween,styles.mb50]}>
           <Text style={styles.infoTitle}>收件人</Text>
           <TextInput ref={inputRef} onChangeText={(e)=>handleInput('receiver',e)} style={styles.input} />
           </View>
-          <View style={{flexDirection:'row', justifyContent:'space-between',marginBottom:50}}>
+          <View style={[styles.flexRow,styles.spaceBetween,styles.mb50]}>
           <Text style={styles.infoTitle}>收件電話</Text>
           <TextInput onChangeText={(e)=>handleInput('tel',e)} style={styles.input}/>
           </View>
-          <View style={{flexDirection:'row', justifyContent:'space-between',marginBottom:50}}>
+          <View style={[styles.flexRow,styles.spaceBetween,styles.mb50]}>
           <Text style={styles.infoTitle}>郵遞區號</Text>
           <TextInput onChangeText={(e)=>handleInput('postCode',e)} style={styles.input}/>
           </View>
-          <View style={{flexDirection:'row', justifyContent:'space-between',marginBottom:50}}>
+          <View style={[styles.flexRow,styles.spaceBetween,styles.mb50]}>
           <Text style={styles.infoTitle}>收件地址</Text>
           <TextInput onChangeText={(e)=>handleInput('address',e)} style={styles.input}/>
           </View>
@@ -87,7 +87,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-  }
+  },
+  itemsCenter:{alignItems:'center'},
+  mt10:{ marginTop:10},
+  mb30:{ marginBottom:30},
+  text30:{fontSize:30},
+  flexRow:{flexDirection:'row'},
+  spaceBetween:{justifyContent:'space-between'},
+  mb50:{marginBottom:50}
+
 })
 
 export default NewCustomer

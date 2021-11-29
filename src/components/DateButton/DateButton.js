@@ -4,6 +4,8 @@ import {StyleSheet, View,Text} from 'react-native';
 import service from '../../apis/check';
 import moment from 'moment';
 import { Button } from 'react-native-paper';
+import {useContextSelector} from 'use-context-selector';
+import {spinContext} from '../spinner/spin';
 
 
 let differentDate = [
@@ -17,6 +19,7 @@ let differentDate = [
 const DateButton=({data})=>{
   const{setRestoreLogData,postData,setPostData}=data
   const[isActive,setActive] = useState('')
+  const showLoading = useContextSelector(spinContext, e => e.showLoading);
 
   useEffect(()=>{
     setActive('今天')
@@ -72,9 +75,11 @@ const DateButton=({data})=>{
   }
 
   const getRestoreLog=(request)=>{
+    showLoading(true)
     service.Inventory.getInventoryLogList(request)
       .then(res=>{
         setRestoreLogData(res.data.content)
+        showLoading(false)
       })
   }
 
@@ -128,4 +133,3 @@ const styles = StyleSheet.create({
 });
 
 export default DateButton
-// burlywood

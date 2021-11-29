@@ -93,7 +93,7 @@ const Header = ({ navigation, options }) => {
       <View style={styles.container}>
         <View>
           <Text onPress={()=>showSetting('setting')}>
-            <Icon style={{color:'#f0b8a5'}} name="settings" />
+            <Icon style={styles.colorF0b8a5} name="settings" />
           </Text>
         </View>
         <View style={styles.headerWrapper}>
@@ -102,7 +102,7 @@ const Header = ({ navigation, options }) => {
           </Text>
           <Menu
             visible={visible}
-            anchor={<Text onPress={showMenu}>{visible?<Icon size={40} name="arrow-drop-up" />:<Icon size={40} style={{color:'#f0b8a5'}} name="arrow-drop-down" />} </Text>}
+            anchor={<Text onPress={showMenu}>{visible?<Icon size={40} name="arrow-drop-up" />:<Icon size={40} style={styles.colorF0b8a5} name="arrow-drop-down" />} </Text>}
             onRequestClose={hideMenu}
             style={styles.menuWrapper}
           >
@@ -129,7 +129,7 @@ const Header = ({ navigation, options }) => {
           </Menu>
         </View>
         <View style={styles.logoutWrapper}>
-            <Text style={{fontSize:20, color:'white'}}>{user}</Text>
+            <Text style={styles.fontStyle}>{user}</Text>
             <Button onPress={_logout} icon={'logout'} text="" />
         </View>
       </View>
@@ -158,10 +158,10 @@ const styles = StyleSheet.create({
     color:'white'
   },
   menuWrapper:{
-    position:'absolute',
-    top:45,
-    left:370,
-    width:330,
+    position:'relative',
+    top:'8%',
+    left:375,
+    width:"83%",
   },
   btnWrapper:{
     flexDirection: 'row', padding: 16
@@ -200,7 +200,8 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  logoutWrapper:{flex:0.3,flexDirection:'row', alignItems: 'center', justifyContent: 'center',}
+  logoutWrapper:{flex:0.3,flexDirection:'row', alignItems: 'center', justifyContent: 'center',},
+  colorF0b8a5:{color:'#f0b8a5'}
 });
 
 

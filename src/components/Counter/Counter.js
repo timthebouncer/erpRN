@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import NumericInput from 'react-native-numeric-input'
 
 const Counter=({setQuantity,quantity})=>{
@@ -7,7 +7,7 @@ const Counter=({setQuantity,quantity})=>{
       value={quantity}
       onChange={value => setQuantity(value)}
       onLimitReached={(isMax,msg) => console.log(isMax,msg)}
-      totalWidth={220}
+      totalWidth={190}
       totalHeight={50}
       iconSize={25}
       valueType='integer'

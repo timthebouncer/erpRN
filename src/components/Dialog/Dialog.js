@@ -43,7 +43,6 @@ export const DialogProvider = ({children}) => {
     if (modalRef.current != null) {
       const success = await modalRef.current.onOk()
       if(value && value.title){
-        console.log(value);
         service.Distribute.deleteOrderList(value.id)
           .then(res=>{
             console.log(res);
@@ -84,20 +83,20 @@ function CustomDialog() {
     <Portal>
       {
         type === 'customer' || type === 'receiver' ? (
-          <Modal visible={visible} onDismiss={onCancel} style = {{backgroundColor: '#FFF0E9', padding: 20}}>
+          <Modal visible={visible} onDismiss={onCancel} style = {[styles.bgFFF0E9,styles.p20]}>
             {Content}
-            <View style={{flexDirection:'row', justifyContent:'space-around'}}>
-              <Button onPress={onCancel} mode="contained" style={styles.cancelBtn}><Text style={{color:'black'}}>取消</Text></Button>
+            <View style={[styles.flexRow,styles.spaceAround]}>
+              <Button onPress={onCancel} mode="contained" style={styles.cancelBtn}><Text style={styles.colorBlack}>取消</Text></Button>
               <Button onPress={onOk} mode="contained" style={styles.confirmBtn} >
                 確定
               </Button>
             </View>
           </Modal>
         ): type === 'sales' ? (
-          <Modal visible={visible} onDismiss={onCancel} style = {{backgroundColor: '#FFF0E9', padding: 20,marginTop:30}}>
+          <Modal visible={visible} onDismiss={onCancel} style = {[styles.bgFFF0E9,styles.p20,styles.mt30]}>
             {Content}
-            <View style={{flexDirection:'row', justifyContent:'space-around'}}>
-              <Button onPress={onCancel} mode="contained" style={styles.cancelBtn}><Text style={{color:'black'}}>取消</Text></Button>
+            <View style={[styles.flexRow,styles.spaceAround]}>
+              <Button onPress={onCancel} mode="contained" style={styles.cancelBtn}><Text style={styles.colorBlack}>取消</Text></Button>
               <Button onPress={onOk} mode="contained" style={styles.confirmBtn} >
                 確定
               </Button>
@@ -110,7 +109,7 @@ function CustomDialog() {
             </Dialog.Content>
             <Dialog.Actions style={styles.btnWrapper}>
               <Button onPress={onCancel} mode="contained" style={styles.cancelBtn} >
-                <Text style={{color:'black'}}>
+                <Text style={styles.colorBlack}>
                   取消
                 </Text>
               </Button>
@@ -126,7 +125,7 @@ function CustomDialog() {
             </Dialog.Content>
             <Dialog.Actions style={styles.btnWrapper}>
               <Button onPress={onCancel} mode="contained" style={styles.cancelBtn} >
-                <Text style={{color:'black'}}>
+                <Text style={styles.colorBlack}>
                   取消
                 </Text>
               </Button>
@@ -148,4 +147,10 @@ const styles = StyleSheet.create({
   btnWrapper:{flex: 0.2, justifyContent:'space-around',marginLeft:60,marginRight:60},
   cancelBtn:{backgroundColor: 'transparent',width:70,height:40,elevation: 0,borderWidth:1,borderColor:'#e1d7cb'},
   confirmBtn:{backgroundColor: '#0e77c1',width:70,height:40,elevation: 0,borderWidth:1,borderColor:'#e1d7cb'},
+  flexRow:{flexDirection:'row'},
+  spaceAround:{justifyContent:'space-around'},
+  bgFFF0E9:{backgroundColor: '#FFF0E9'},
+  p20:{padding: 20},
+  mt30:{marginTop: 30},
+  colorBlack:{color:'black'}
 });

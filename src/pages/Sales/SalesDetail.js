@@ -8,6 +8,7 @@ import ForSales from './components/forSales';
 import ForDetail from './components/forDetail';
 import {snackBarContext} from '../../components/SnackBar/SnackBar';
 import { CommonActions } from '@react-navigation/native';
+import {spinContext} from '../../components/spinner/spin';
 
 
 const SalesDetail=({route,navigation})=>{
@@ -16,10 +17,10 @@ const SalesDetail=({route,navigation})=>{
   const [firstChecked, setFirstChecked] = useState(1);
   const [secondChecked, setSecondChecked] = useState(1);
   const [clientInfo,setClientInfo] = useState({})
-  const {orderList, getReceiver,setEditOrderDetail}  = useContextSelector(orderListContext,e=>e)
-  const {params} = route.params
-
+  const {orderList, getReceiver,editOrderDetail, setEditOrderDetail}  = useContextSelector(orderListContext,e=>e)
+  const {params,orderId} = route.params
   const {show} = useContextSelector(snackBarContext,e=>e)
+  const showLoading = useContextSelector(spinContext, e => e.showLoading);
 
 
   const {quantity, total} = useMemo(() => {
@@ -32,8 +33,43 @@ const SalesDetail=({route,navigation})=>{
   }, [orderItemList])
 
 
+  const switchPrint=(type,res)=>{
+    switch (type) {
+      case 1:
+        service.Distribute.printOrder(res.data.orderId,firstChecked)
+          .then(res=>{
+            console.log(res,'商用格式');
+          })
+        service.Distribute.printOrder(res.data.orderId,secondChecked)
+          .then(res=>{
+            console.log(res,'有價格');
+          })
+        service.Distribute.tagPrint({deliveryOrderId: res.data.orderId})
+          .then(res=>{
+            console.log(res,'貼箱');
+          })
+        break;
+      case 2:
+        service.Distribute.printOrder(res.data.orderId,firstChecked)
+          .then(res=>{
+            console.log(res,'商用格式');
+          })
+        service.Distribute.printOrder(res.data.orderId,secondChecked)
+          .then(res=>{
+            console.log(res,'有價格');
+          })
+        break;
+      case 3:
+        service.Distribute.tagPrint(res.data.orderId)
+          .then(res=>{
+            console.log(res,'貼箱');
+          })
+    }
+  }
+
   const submitHandler=(type)=>{
-     service.Distribute.addOrder(orderList)
+    if(!editOrderDetail.orderNo){
+      service.Distribute.addOrder(orderList)
         .then(res=>{
           show('出貨成功','success')
           console.log(res);
@@ -41,52 +77,50 @@ const SalesDetail=({route,navigation})=>{
             CommonActions.reset({
               index: 0,
               routes: [
-                { name: 'SalesDetail' ,params:{orderId:res.data.orderId}},
+                { name: 'SalesLog'},
               ],
             })
           );
-          switch (type) {
-            case 1:
-              service.Distribute.printOrder(res.data.orderId,firstChecked)
-                .then(res=>{
-                  console.log(res,'商用格式');
-                })
-              service.Distribute.printOrder(res.data.orderId,secondChecked)
-                .then(res=>{
-                  console.log(res,'有價格');
-                })
-              service.Distribute.tagPrint({deliveryOrderId: res.data.orderId})
-                .then(res=>{
-                  console.log(res,'貼箱');
-                })
-              break;
-            case 2:
-              service.Distribute.printOrder(res.data.orderId,firstChecked)
-                .then(res=>{
-                  console.log(res,'商用格式');
-                })
-              service.Distribute.printOrder(res.data.orderId,secondChecked)
-                .then(res=>{
-                  console.log(res,'有價格');
-                })
-              break;
-            case 3:
-              service.Distribute.tagPrint(res.data.orderId)
-                .then(res=>{
-                  console.log(res,'貼箱');
-                })
-          }
+          switchPrint(type,res)
         })
-       .catch(err=>{
-         const {message} = err.response.data
-         show(message,'error')
-       })
+        .catch(err=>{
+          const {message} = err.response.data
+          show(message,'error')
+        })
+    }else {
+      console.log(orderList,'orderList');
+      orderList.orderId = orderId
+      service.Distribute.editOrder(orderList)
+        .then(res=>{
+          show('修改成功','success')
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [
+                { name: 'SalesLog'},
+              ],
+            })
+          );
+          switchPrint(type,res)
+        })
+        .catch(err=>{
+          const {message} = err.response.data
+          show(message,'error')
+        })
+    }
   }
 
 
   const lastPage =()=> {
     if(route.params.orderId){
-      navigation.navigate({name:'Sales',params: {orderId: route.params.orderId}});
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [
+            { name: 'Sales' ,params: {orderId: route.params.orderId,isEdit:true}},
+          ],
+        })
+      );
     }else {
       navigation.goBack();
     }
@@ -95,21 +129,32 @@ const SalesDetail=({route,navigation})=>{
 
 
   useEffect(()=>{
+    showLoading(true)
+
     if(route.params.orderId){
       service.Distribute.getDistributeDetail(route.params.orderId)
         .then(res=>{
-          const {orderDetailItemResponseList} =res.data
-          setOrderItemList(orderDetailItemResponseList)
-          setOrderDetail(res.data)
+          const {orderDetailItemResponseList} = res.data
+          if(route.params.isEdit){
+            setOrderItemList(orderList.orderItemRequestList)
+            setOrderDetail(orderList)
+          }else {
+            setOrderItemList(orderDetailItemResponseList)
+            setOrderDetail(res.data)
+          }
+          // setOrderItemList(orderList.orderItemRequestList || orderDetailItemResponseList)
+          // setOrderDetail({...res.data, orderDetailItemResponseList: orderList.orderItemRequestList || orderDetailItemResponseList})
           setEditOrderDetail(res.data)
+          showLoading(false)
         })
     }else {
       setOrderDetail(orderList)
-      const {orderItemRequestList} = orderList
-      setOrderItemList(orderItemRequestList)
+      setOrderItemList(orderList.orderItemRequestList)
       service.Customer.getClient(orderList.clientId)
         .then(res=>{
           setClientInfo(res.data)
+          showLoading(false)
+
         })
     }
 
@@ -122,7 +167,7 @@ const SalesDetail=({route,navigation})=>{
 
   return(
     <ScrollView style={{backgroundColor:'#FFF0E9', width:deviceWidth}}>
-      <View style={{alignItems:'center'}}><Text style={styles.textStyle5}>出貨單</Text></View>
+      <View style={styles.itemsCenter}><Text style={styles.textStyle5}>出貨單</Text></View>
       {
         orderDetail.orderItemRequestList ? <ForSales orderDetail={orderDetail} clientInfo={clientInfo} checkboxes={params} getReceiver={getReceiver} />:<ForDetail orderDetail={orderDetail} />
       }
@@ -142,7 +187,7 @@ const SalesDetail=({route,navigation})=>{
           <Text style={styles.textStyle7}>${(total + orderDetail.shippingFee - orderDetail.allowance).toFixed(2)}</Text>
         </View>
       </View>
-      <View style={styles.productTitle}><Text style={{fontSize:18}}>列印資料</Text></View>
+      <View style={styles.productTitle}><Text style={styles.Text18}>列印資料</Text></View>
       <View>
         <View style={styles.radioWrapper}>
           <Text style={styles.radioTitle}>1.</Text>
@@ -215,7 +260,8 @@ const styles = StyleSheet.create({
   textStyle4:{color:'black'},
   textStyle5:{fontSize: 35, justifyContent:'center', alignItems:'center'},
   textStyle7:{fontSize:28,marginBottom:20},
-  productTitle:{backgroundColor:'#BBBBBB',marginLeft:5,height:30, marginBottom:10, borderRadius: 5},
+  text18:{fontSize:18},
+  productTitle:{backgroundColor:'#BBBBBB',marginLeft:5,marginRight:5,height:30, marginBottom:10, borderRadius: 5},
   checkoutWrapper:{flex:1, flexDirection:'row', justifyContent:'space-between', padding:10},
   radioWrapper:{flexDirection:'row', justifyContent:'space-between',alignItems: "center",paddingLeft:10,paddingRight:10},
   radioBtn:{flexDirection:'row',marginRight:55},
@@ -224,12 +270,12 @@ const styles = StyleSheet.create({
   radioPriceBtn:{flexDirection:'row',marginTop:15},
   radioPrice:{fontSize:17, alignItems: "center", width:125},
   btnDistributeTag:{alignItems:'center',marginBottom: 5, marginTop:25},
-  confirmBtn:{width:'70%',height:60,elevation: 0,borderWidth:1,borderColor:'#e1d7cb',backgroundColor:'#2B81D6'},
-  btnWrapper:{flexDirection:'row',justifyContent:'space-between', padding:4},
-  btnBack:{flex:0.6,backgroundColor: 'white',height:40,elevation: 0,borderWidth:1,borderColor:'#e1d7cb'},
-  btnPrint:{flex:1,backgroundColor: '#8EC82E',height:40,elevation: 0,borderWidth:1,borderColor:'#e1d7cb',marginLeft:1,marginRight:1,minWidth:30},
-  btnPrintTag:{flex:1,backgroundColor: '#8EC82E',height:40,elevation: 0,borderWidth:1,borderColor:'#e1d7cb',minWidth: 30},
-
+  confirmBtn:{width:'80%',height:60,elevation: 0,borderWidth:1,borderColor:'#e1d7cb',backgroundColor:'#2B81D6',marginBottom:5},
+  btnWrapper:{flexDirection:'row',justifyContent:'space-between', padding:4,marginLeft:5,marginRight:5},
+  btnBack:{backgroundColor: 'white',height:40,elevation: 0,borderWidth:1,borderColor:'#e1d7cb'},
+  btnPrint:{backgroundColor: '#8EC82E',height:40,elevation: 0,borderWidth:1,borderColor:'#e1d7cb',marginLeft:1,marginRight:1,minWidth:50},
+  btnPrintTag:{backgroundColor: '#8EC82E',height:40,elevation: 0,borderWidth:1,borderColor:'#e1d7cb',minWidth:30},
+  itemsCenter: {alignItems: 'center'}
 })
 
 export default SalesDetail

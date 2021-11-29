@@ -9,9 +9,10 @@ import {shippingRule} from '../../components/shippingFee';
 import {useContextSelector} from 'use-context-selector';
 import {orderListContext} from '../../store/orderListProvider';
 import MaskInput from 'react-native-mask-input';
+import {spinContext} from '../../components/spinner/spin';
 
 
-const SalesShipment = ({navigation}) => {
+const SalesShipment = ({navigation,route}) => {
   const [orderNo, setOrderNo] = useState('');
   const [readyToGo, setReadyToGo] = useState(false);
   const [shippingFee, setShippingFee] = useState(0);
@@ -24,7 +25,7 @@ const SalesShipment = ({navigation}) => {
   const [remark, setRemark] = useState('');
   const [show, setShow] = useState(false);
   const [selectedDay, setSelectedDay] = useState('');
-  const [setOrderList]  = useContextSelector(orderListContext,e=>[e.setOrderList])
+  const [setOrderList,editOrderDetail]  = useContextSelector(orderListContext,e=>[e.setOrderList,e.editOrderDetail])
   const [checkboxes, setCheckboxes] = useState([{
     id: 1,
     title: '雞肉',
@@ -70,12 +71,36 @@ const SalesShipment = ({navigation}) => {
   const lastStep = () => navigation.goBack();
 
   const showDetail = async () => {
-   await setOrderList(e=>({...e, payment:paymentValue, shipment:shipmentValue,temperatureCategory:shipmentValue===3?null:temperature,volume:shipmentValue===3?null:volume,
+   await setOrderList(e=>({...e, payment:paymentValue, shipment:shipmentValue,temperatureCategory:temperature,volume:volume,
      piecesAmount:piecesAmount,trackingNo:trackingNo,orderNo:orderNo, remark:remark,shippingFee:shippingFee,stockOutDate:selectedDay,
      chicken:checkboxes[0].checked, egg:checkboxes[1].checked,vegetable:checkboxes[2].checked}))
-    navigation.navigate('SalesDetail', {params:checkboxes});
+    navigation.navigate('SalesDetail', {params:checkboxes,orderId:route.params.orderId,isEdit: !!route.params.orderId});
   }
 
+
+  useEffect(()=>{
+    if(editOrderDetail.salesDay){
+      setSelectedDay(moment(editOrderDetail.salesDay).format('YYYY-MM-DD'))
+      setOrderNo(editOrderDetail.orderNo)
+      setPaymentValue(editOrderDetail.payment)
+      setShipmentValue(editOrderDetail.shipment)
+      setTemperature(editOrderDetail.temperatureCategory)
+      setVolume(editOrderDetail.volume)
+      setPiecesAmount(editOrderDetail.piecesAmount)
+      setRemark(editOrderDetail.remark)
+
+      checkboxes.forEach(item =>{
+        if(item.title === '雞肉'){
+          item.checked = editOrderDetail.chicken
+        }else if(item.title === '雞蛋'){
+          item.checked = editOrderDetail.egg
+        }else if(item.title === '蔬菜'){
+          item.checked = editOrderDetail.vegetable
+        }
+      })
+      setReadyToGo(true)
+    }
+  },[])
 
   useEffect(() => {
     if(shipmentValue === 3){
@@ -94,7 +119,7 @@ const SalesShipment = ({navigation}) => {
       <View style={[styles.makeRow, styles.makePadding]}>
         <Text style={styles.makeFontSize}>出貨日期:</Text>
         <Button style={styles.makeCalendar} labelStyle={styles.labelStyle} onPress={showCalendar} icon={'calendar'}>
-            <Text style={{lineHeight:30}}>{selectedDay}</Text>
+            <Text style={styles.lineH30}>{selectedDay}</Text>
         </Button>
           <DateTimePickerModal
             testID="dateTimePicker"
@@ -252,7 +277,7 @@ const SalesShipment = ({navigation}) => {
                    onChangeText={text => setPiecesAmount(text)}/>
       </View>
       <View><Text style={styles.productTitle}>備註</Text></View>
-      <View style={{alignItems: 'center', marginTop: 10, marginBottom: 10}}>
+      <View style={styles.remarkArea}>
         <TextInput
           multiline
         onChangeText={(text) => setRemark(text)} style={styles.makeInput3}
@@ -260,7 +285,7 @@ const SalesShipment = ({navigation}) => {
       </View>
       <View style={[styles.makeRow, styles.makePadding]}>
         <Button style={[styles.confirmBtn,styles.makeMRight10]} mode={'contained'} onPress={lastStep}><Text>客戶/商品資料 上一步</Text></Button>
-        <Button style={readyToGo?[styles.confirmBtn]:[styles.makeWidth180]} disabled={!readyToGo} mode={'contained'} onPress={showDetail}><Text>下一步 > 出貨單</Text></Button>
+        <Button style={readyToGo?[styles.nextBtn]:styles.makeWidth45} disabled={!readyToGo} mode={'contained'} onPress={showDetail}><Text>下一步 > 出貨單</Text></Button>
       </View>
     </ScrollView>
   );
@@ -277,18 +302,27 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     fontSize: 19,
   },
-  makeWidth180:{width:180},
+  remarkArea:{alignItems: 'center', marginTop: 10, marginBottom: 10},
   makeFontSize: {fontSize: 18, lineHeight: 30},
   makeFontSize2: {fontSize: 18, lineHeight: 50, marginRight: 20},
   makeSpace: {justifyContent: 'space-around'},
   makeWidth: {width: 290},
+  makeWidth45: {width: '45%'},
   makeMRight: {marginRight: 10},
   makeMRight2: {marginRight: 40},
   makeMRight3: {marginRight: 50, marginBottom: 15},
   makeMRight10: {marginRight: 10},
   confirmBtn: {
     backgroundColor: '#0e77c1',
-    width: 190,
+    width: '50%',
+    height: 40,
+    elevation: 0,
+    borderWidth: 1,
+    borderColor: '#e1d7cb',
+  },
+  nextBtn: {
+    backgroundColor: '#0e77c1',
+    width: '45%',
     height: 40,
     elevation: 0,
     borderWidth: 1,
@@ -350,6 +384,7 @@ const styles = StyleSheet.create({
     // justifyContent: "space-between",
     alignItems: "baseline"
   },
+  lineH30:{lineHeight:30}
 });
 
 export default SalesShipment;

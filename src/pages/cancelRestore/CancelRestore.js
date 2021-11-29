@@ -92,7 +92,7 @@ const CancelRestore=()=>{
               {
                 ['公斤','公克','台斤'].includes(canCelRestoreList.unit)?(
                   <View style={styles.weightWrapper}>
-                    <Text style={{fontSize:20}}>{canCelRestoreList.weight}</Text>
+                    <Text style={styles.textStyle}>{canCelRestoreList.weight}</Text>
                   </View>
                 ):(
                   <Counter quantity={quantity} setQuantity={setQuantity} />
@@ -102,7 +102,7 @@ const CancelRestore=()=>{
           </View>
         ):(
           <View style={styles.scanWarning}>
-              <Icon style={{lineHeight:40}} name='add' />
+              <Icon style={styles.lineH40} name='add' />
               <Text style={styles.textStyle3}>請掃條碼添加商品</Text>
           </View>
         )
@@ -143,7 +143,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   scanWarning:{flexDirection:'row',width:'100%',justifyContent:'center',marginTop:40,marginBottom: 40},
-  btnWrapper:{flexDirection:'row', justifyContent:'space-around',alignItems:'center', width:'100%'}
+  btnWrapper:{flexDirection:'row', justifyContent:'space-around',alignItems:'center', width:'100%'},
+  lineH40:{lineHeight:40}
 });
 
 export default CancelRestore

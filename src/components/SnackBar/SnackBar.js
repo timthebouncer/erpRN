@@ -1,8 +1,7 @@
 import React, {useState} from 'react';
-import {StyleSheet,Text,View} from 'react-native';
+import {StyleSheet,Text} from 'react-native';
 import { Snackbar } from 'react-native-paper';
 import { createContext, useContextSelector } from 'use-context-selector';
-import {dialogContext} from '../Dialog/Dialog';
 
 
 
@@ -45,7 +44,7 @@ return(
     onDismiss={()=>setVisible(false)}
     visible={visible}
     style={type === 'success' ? styles.successStyle:styles.errorStyle}
-    wrapperStyle={{position:'absolute',top:0,left:'8%',width:'85%',alignItems:'center',justifyContent:'center'}}
+    wrapperStyle={styles.wrapperStyle}
   >
       <Text>
         {msg}
@@ -61,6 +60,7 @@ const styles = StyleSheet.create({
   errorStyle: {
     backgroundColor:'red',
   },
+  wrapperStyle:{position:'absolute',top:0,left:'8%',width:'85%',alignItems:'center',justifyContent:'center'}
 });
 
 

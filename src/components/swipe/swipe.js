@@ -82,7 +82,7 @@ export default function Basic({data,setSalesLogData,navigation}) {
           <DataTable.Cell style={styles.dateContent}>{br(item.orderNo)}</DataTable.Cell>
           <DataTable.Cell style={styles.nameContent}>{item.clientName}</DataTable.Cell>
           <DataTable.Cell style={styles.recipientName}>{item.recipientName}</DataTable.Cell>
-          <DataTable.Cell numeric style={{margin:7}}>${item.totalPrice}</DataTable.Cell>
+          <DataTable.Cell numeric style={styles.m7}>${item.totalPrice.toFixed(2)}</DataTable.Cell>
         </View>
       </DataTable.Row>
     </TouchableHighlight>
@@ -118,10 +118,11 @@ export default function Basic({data,setSalesLogData,navigation}) {
         renderItem={renderItem}
         renderHiddenItem={renderHiddenItem}
         leftOpenValue={130}
+        stopLeftSwipe={130}
         rightOpenValue={-100}
+        stopRightSwipe={-100}
         previewRowKey={'0'}
-        previewOpenValue={-40}
-        previewOpenDelay={3000}
+        previewOpenDelay={2000}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -159,7 +160,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: 130,
-    height: 50
+    height: 70
   },
   backRightBtn: {
     alignItems: 'center',
@@ -167,17 +168,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'absolute',
     top: 0,
-    width: 75,
+    width: 70,
   },
   backRightBtnRight: {
     backgroundColor: 'red',
     right: 0,
     width: 100
   },
-  itemTitle:{backgroundColor:'white'},
+  itemTitle:{backgroundColor:'white',height: 70},
   itemWrapper:{flex:1, flexDirection:'row'},
   dateContent:{justifyContent:'center',margin:7},
   nameContent:{justifyContent:'center',margin:7,marginRight:0},
   recipientName:{justifyContent:'center',margin:7,marginRight:-20},
   textStyle:{fontSize:20},
+  m7:{margin:7}
 });

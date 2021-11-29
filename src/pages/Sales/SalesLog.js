@@ -1,11 +1,12 @@
 import React,{useState,useEffect} from 'react'
-import {StyleSheet, View, SafeAreaView, FlatList, TouchableOpacity} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {Text, DataTable} from 'react-native-paper';
 import DateButton from '../../components/DateButton/DateButton';
 import service from '../../apis/check';
 import moment from 'moment';
 import Basic from '../../components/swipe/swipe';
-import Test from '../../components/test';
+import {useContextSelector} from 'use-context-selector';
+import {spinContext} from '../../components/spinner/spin';
 
 
 let differentDate = [
@@ -19,13 +20,15 @@ let formatEnd = "YYYY-MM-DD 23:59:59";
 
 
 const SalesLog=({navigation})=>{
+  const showLoading = useContextSelector(spinContext, e => e.showLoading);
+
   const[salesLogData, setSalesLogData]=useState([])
   const [postData,setPostData]=useState(()=>{return {
     orderNo:'',
     startDate:'',
     endDate:'',
     pageNumber: 1,
-    pageSize: 1000
+    pageSize: 10000
   }})
 
 
@@ -50,23 +53,25 @@ const SalesLog=({navigation})=>{
   // }
 
   useEffect(()=>{
+    showLoading(true)
     service.Distribute.getDistributeList(postData)
       .then(res=>{
         const {content} = res.data
         let newContent = content.filter(item=>item.remark !== "註銷")
         newContent.forEach((item,index) => item.key = index)
         setSalesLogData(newContent)
+        showLoading(false)
       })
       .catch(err=>{
         console.log(err.response);
       })
-  },[salesLogData])
+  },[])
 
 
   return (
     <View style={styles.container}>
       {/*<DateButton data={{setSalesLogData,postData,setPostData}} />*/}
-      <View style={styles.titleText}><Text style={{fontSize:18}}>出貨資料</Text></View>
+      <View style={styles.titleText}><Text style={styles.text18}>出貨資料</Text></View>
       <DataTable style={styles.contentWrapper}>
         <DataTable.Header style={styles.itemTitle}>
           <View style={styles.itemWrapper}>
@@ -80,8 +85,8 @@ const SalesLog=({navigation})=>{
           salesLogData.length ? (
             <Basic data={salesLogData} setSalesLogData={setSalesLogData} navigation={navigation} />
           ):(
-            <View style={{position:'absolute',marginTop:'30%',marginLeft:'30%'}}>
-              <Text style={{fontSize:40}}>尚無資料</Text>
+            <View style={styles.nodata}>
+              <Text style={styles.text40}>尚無資料</Text>
             </View>
           )
         }
@@ -109,26 +114,12 @@ const styles = StyleSheet.create({
   nameHeader:{width:100,justifyContent:'center',marginRight:-30},
   nameContent:{justifyContent:'center',margin:7,marginRight:0},
   recipientName:{justifyContent:'center',margin:7,marginRight:-20},
+  text18:{fontSize:18},
+  text40:{fontSize:40},
+  nodata:{position:'absolute',marginTop:'30%',marginLeft:'30%'}
 });
 
 
 
 export default SalesLog
-// <SafeAreaView>
-// <FlatList
-// data={salesLogData}
-// onEndReached={fetchMore}
-// keyExtractor={item=>item.orderId}
-// renderItem={({item})=>(
-//   <DataTable.Row style={styles.itemTitle}>
-//     <View style={styles.itemWrapper}>
-//       <DataTable.Cell style={styles.dateContent}>{br(item.orderNo)}</DataTable.Cell>
-//       <DataTable.Cell style={styles.nameContent}>{item.clientName}</DataTable.Cell>
-//       <DataTable.Cell style={styles.recipientName}>{item.recipientName}</DataTable.Cell>
-//       <DataTable.Cell numeric style={{margin:7}}>{item.totalPrice}</DataTable.Cell>
-//     </View>
-//   </DataTable.Row>
-// )}
-// >
-// </FlatList>
-// </SafeAreaView>
+

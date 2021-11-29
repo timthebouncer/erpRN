@@ -6,11 +6,13 @@ import service from '../../apis/check'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useContextSelector} from 'use-context-selector';
 import {snackBarContext} from '../../components/SnackBar/SnackBar';
+import {spinContext} from '../../components/spinner/spin';
 
 
 const Login = ({ navigation }) => {
 
   const {show} = useContextSelector(snackBarContext,e=>e)
+  const showLoading = useContextSelector(spinContext, e => e.showLoading);
 
   const[userLogin, setUserLogin] = useState({username:'',password:''})
 
@@ -40,6 +42,10 @@ const Login = ({ navigation }) => {
        }
      });
   }
+
+  useEffect(()=>{
+    showLoading(false)
+  },[])
 
   return (
     <View style={styles.container}>

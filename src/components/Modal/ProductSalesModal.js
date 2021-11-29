@@ -53,7 +53,7 @@ const ProductSalesModal=(props)=>{
 
   return(
     <ScrollView>
-      <View style={{marginTop:10}}>
+      <View style={styles.mt10}>
               <View style={styles.rowWrapper}>
                 <Text style={styles.makeText}>商品條碼</Text>
                 <Text style={styles.makeText}>{newProductList?.barcode}</Text>
@@ -120,6 +120,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  mt10:{marginTop:10}
 })
 
 export default ProductSalesModal

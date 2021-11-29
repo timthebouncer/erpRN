@@ -1,6 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {View, ScrollView, Text, StyleSheet, TextInput} from 'react-native';
-import {List,RadioButton, Button} from 'react-native-paper';
+import React from 'react';
+import {View, Text} from 'react-native';
 
 
 

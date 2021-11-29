@@ -26,6 +26,7 @@ import {SnackBarProvider} from './src/components/SnackBar/SnackBar';
 import {OrderListProvider} from './src/store/orderListProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {navigate,navigationRef} from './src/apis/navigationService'
+import {SpinnerProvider} from './src/components/spinner/spin';
 
 const Stack = createNativeStackNavigator();
 
@@ -42,6 +43,7 @@ const App = () => {
 
   return (
     <PaperProvider>
+      <SpinnerProvider>
       <SnackBarProvider>
         <DialogProvider>
           <OrderListProvider>
@@ -63,6 +65,7 @@ const App = () => {
           </OrderListProvider>
         </DialogProvider>
       </SnackBarProvider>
+      </SpinnerProvider>
     </PaperProvider>
 
   );

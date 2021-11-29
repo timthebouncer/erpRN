@@ -1,14 +1,21 @@
 import {View, Text, TextInput,StyleSheet} from 'react-native'
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
 
 const EditRemark=({item,setRemark})=>{
 
+  const inputRef = useRef(null)
+
+  useEffect(()=>{
+    inputRef.current.focus()
+  },[])
 
   return <View>
     <View style={styles.makeRow}><Text style={styles.makeText}>商品條碼</Text><Text style={styles.makeText}>{item.barcode}</Text></View>
     <View style={styles.makeRow}><Text style={styles.makeText}>商品名稱</Text><Text style={styles.makeText}>{item?.alias ? item?.alias: item?.productName}</Text></View>
-    <View style={styles.makeRow}><Text style={[styles.makeText,styles.marginLeft10]}>備註</Text><TextInput defaultValue={item.remark} onChangeText={(e)=>setRemark(e)} multiline style={styles.input} /></View>
+    <View style={styles.makeRow}><Text style={[styles.makeText,styles.marginLeft10]}>備註</Text>
+      <TextInput ref={inputRef} defaultValue={item.remark} onChangeText={(e)=>setRemark(e)} multiline style={styles.input} />
+    </View>
   </View>
 }
 
@@ -17,6 +24,7 @@ const styles = StyleSheet.create({
   marginLeft10:{marginLeft:10},
   makeRow:{flexDirection:'row', justifyContent:'space-around', width:'100%'},
   input:{
+    textAlignVertical: 'top',
     marginRight:10,
     height: 110,
     width:230,
