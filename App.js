@@ -27,6 +27,7 @@ import {OrderListProvider} from './src/store/orderListProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {navigate,navigationRef} from './src/apis/navigationService'
 import {SpinnerProvider} from './src/components/spinner/spin';
+import {ToTopProvider} from './src/components/scrollTopBtn/toTop';
 
 const Stack = createNativeStackNavigator();
 
@@ -45,12 +46,13 @@ const App = () => {
     <PaperProvider>
       <SpinnerProvider>
       <SnackBarProvider>
+        <ToTopProvider>
         <DialogProvider>
           <OrderListProvider>
             <NavigationContainer ref={navigationRef}>
               <Stack.Navigator screenOptions={{
                 header: Header,
-              }} initailRouteName="Sales">
+              }} initailRouteName="Login">
                 <Stack.Screen name="Login" component={Login} options={{headerShown: false}}/>
                 <Stack.Screen name="Sales" component={Sales} options={{headerTitle: '出貨'}}/>
                 <Stack.Screen name="SalesLog" component={SalesLog} options={{headerTitle: '出貨清單'}}/>
@@ -64,6 +66,7 @@ const App = () => {
             </NavigationContainer>
           </OrderListProvider>
         </DialogProvider>
+        </ToTopProvider>
       </SnackBarProvider>
       </SpinnerProvider>
     </PaperProvider>

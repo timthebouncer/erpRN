@@ -20,6 +20,7 @@ import {snackBarContext} from '../../components/SnackBar/SnackBar';
 import EditRemark from './components/editRemark';
 import {formatData} from './components/formatData';
 import {spinContext} from '../../components/spinner/spin';
+import {toTopContext} from '../../components/scrollTopBtn/toTop';
 
 const Sales = ({navigation, route}) => {
   const [searchName, setSearchName] = useState('');
@@ -53,13 +54,18 @@ const Sales = ({navigation, route}) => {
     return [{id: 1, receiver: '同客戶資料'}, {id: 2, receiver: '同公司資料'}];
   });
   const [readyToGo, setReadyToGo] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [Offset, setOffset] = useState(0);
   const inputRef = useRef(null);
   const swipeRef = useRef(null);
+  const scrollRef = useRef(null);
   const showModal = useContextSelector(dialogContext, e => e.showModal);
   const show = useContextSelector(snackBarContext, e => e.show);
   const showLoading = useContextSelector(spinContext, e => e.showLoading);
-  const [setOrderList, getReceiver, editOrderDetail, orderList] = useContextSelector(orderListContext, e => [e.setOrderList, e.getReceiver, e.editOrderDetail, e.orderList]);
+
+  const setScrollParam = useContextSelector(toTopContext, e => e.setScrollParam);
+  const setOffsetParam = useContextSelector(toTopContext, e => e.setOffsetParam);
+
+  const [setOrderList, getReceiver, editOrderDetail] = useContextSelector(orderListContext, e => [e.setOrderList, e.getReceiver, e.editOrderDetail, e.orderList]);
 
   const onSave = async () => {
     if (currentOrderItemRef.current === null) {
@@ -67,7 +73,6 @@ const Sales = ({navigation, route}) => {
     }
 
     let arrLength = orderItemResponseList.length;
-    console.log(arrLength);
 
 
     if (arrLength) {
@@ -339,7 +344,7 @@ const Sales = ({navigation, route}) => {
       defaultReceiveInfo: checkedReceiver,
       orderItemRequestList: newData,
     }));
-    navigation.navigate('SalesShipment', {orderId: route?.params?.orderId || '', isEdit: !!route.params.orderId});
+    navigation.navigate('SalesShipment', {orderId: route?.params?.orderId || '', isEdit: route?.params?.orderId || false});
   };
 
 
@@ -377,11 +382,14 @@ const Sales = ({navigation, route}) => {
 
   let deviceWidth = Dimensions.get('window').width;
 
-  // if (loading) {
-  //   return <Text>Loading...</Text>;
-  // }
 
-  return <ScrollView style={{backgroundColor: '#FFF0E9', width: deviceWidth}}>
+  const setFloatIcon=(e)=>{
+    // setOffset(e.nativeEvent.contentSize.height-530-e.nativeEvent.contentOffset.y)
+    setOffsetParam(e.nativeEvent.contentSize.height-530-e.nativeEvent.contentOffset.y)
+    setScrollParam(scrollRef.current)
+  }
+
+  return <ScrollView style={{backgroundColor: '#FFF0E9', width: deviceWidth}} ref={scrollRef} onScroll={e=>setFloatIcon(e)}>
     <List.Accordion
       onPress={() => handleExpanded(1)}
       expanded={expanded}
@@ -589,6 +597,7 @@ const Sales = ({navigation, route}) => {
                 onPress={nextStep}><Text style={styles.textStyle7}>下一步 > 輸入出貨資料</Text></Button>
       </View>
     </View>
+    {/*<ToTop scrollRef={scrollRef} Offset={Offset} />*/}
   </ScrollView>;
 };
 

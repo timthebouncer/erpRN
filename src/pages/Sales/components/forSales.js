@@ -163,6 +163,7 @@ const styles = StyleSheet.create({
   productTitle:{backgroundColor:'#BBBBBB',marginLeft:5,marginRight: 5,height:30, marginBottom:10, borderRadius: 5},
   productContent:{flex:1, flexDirection:'row', justifyContent:'space-between', padding:15, backgroundColor:'white',height:250,marginLeft: 5,marginRight: 5,
     marginTop:-10,marginBottom:13,borderRadius:10,shadowColor: "#000",shadowOffset: { width: 0, height: 5,}, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 10,
+    zIndex:1
   },
   contentLeft:{marginLeft: 5},
   contentRight:{marginRight: 70,marginTop:20},

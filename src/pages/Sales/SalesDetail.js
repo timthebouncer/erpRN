@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo} from 'react';
+import React, {useState, useEffect, useMemo, useRef} from 'react';
 import {StyleSheet, Text, View, ScrollView, Dimensions} from 'react-native';
 import service from '../../apis/check';
 import {Button ,RadioButton} from 'react-native-paper';
@@ -9,7 +9,7 @@ import ForDetail from './components/forDetail';
 import {snackBarContext} from '../../components/SnackBar/SnackBar';
 import { CommonActions } from '@react-navigation/native';
 import {spinContext} from '../../components/spinner/spin';
-
+import {ToTop} from '../../components/scrollTopBtn/toTop';
 
 const SalesDetail=({route,navigation})=>{
   const [orderDetail, setOrderDetail]=useState({})
@@ -17,6 +17,8 @@ const SalesDetail=({route,navigation})=>{
   const [firstChecked, setFirstChecked] = useState(1);
   const [secondChecked, setSecondChecked] = useState(1);
   const [clientInfo,setClientInfo] = useState({})
+  const [Offset, setOffset] = useState(0);
+  const scrollRef = useRef(null);
   const {orderList, getReceiver,editOrderDetail, setEditOrderDetail}  = useContextSelector(orderListContext,e=>e)
   const {params,orderId} = route.params
   const {show} = useContextSelector(snackBarContext,e=>e)
@@ -164,9 +166,12 @@ const SalesDetail=({route,navigation})=>{
     return <View><Text>Loading</Text></View>
   }
   let deviceWidth = Dimensions.get('screen').width
+  const setFloatIcon=(e)=>{
+    setOffset(e.nativeEvent.contentSize.height-530-e.nativeEvent.contentOffset.y)
+  }
 
   return(
-    <ScrollView style={{backgroundColor:'#FFF0E9', width:deviceWidth}}>
+    <ScrollView style={{backgroundColor:'#FFF0E9', width:deviceWidth}} ref={scrollRef} onScroll={e=>setFloatIcon(e)}>
       <View style={styles.itemsCenter}><Text style={styles.textStyle5}>出貨單</Text></View>
       {
         orderDetail.orderItemRequestList ? <ForSales orderDetail={orderDetail} clientInfo={clientInfo} checkboxes={params} getReceiver={getReceiver} />:<ForDetail orderDetail={orderDetail} />
@@ -249,6 +254,7 @@ const SalesDetail=({route,navigation})=>{
           <Text style={styles.textStyle2}>列印貼箱標籤</Text>
         </Button>
       </View>
+      {/*<ToTop scrollRef={scrollRef} Offset={Offset} />*/}
     </ScrollView>
   )
 }

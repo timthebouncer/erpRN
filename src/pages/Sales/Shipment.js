@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {ScrollView, View, Text, StyleSheet, TextInput, Dimensions} from 'react-native';
 import {Button, RadioButton} from 'react-native-paper';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -9,7 +9,7 @@ import {shippingRule} from '../../components/shippingFee';
 import {useContextSelector} from 'use-context-selector';
 import {orderListContext} from '../../store/orderListProvider';
 import MaskInput from 'react-native-mask-input';
-import {spinContext} from '../../components/spinner/spin';
+import {ToTop} from '../../components/scrollTopBtn/toTop';
 
 
 const SalesShipment = ({navigation,route}) => {
@@ -25,6 +25,8 @@ const SalesShipment = ({navigation,route}) => {
   const [remark, setRemark] = useState('');
   const [show, setShow] = useState(false);
   const [selectedDay, setSelectedDay] = useState('');
+  const [Offset, setOffset] = useState(0);
+  const scrollRef = useRef(null);
   const [setOrderList,editOrderDetail]  = useContextSelector(orderListContext,e=>[e.setOrderList,e.editOrderDetail])
   const [checkboxes, setCheckboxes] = useState([{
     id: 1,
@@ -112,9 +114,12 @@ const SalesShipment = ({navigation,route}) => {
   }, [shipmentValue,shipmentValue,temperature,volume]);
 
   let deviceWidth = Dimensions.get('window').width
+  const setFloatIcon=(e)=>{
+    setOffset(e.nativeEvent.contentSize.height-530-e.nativeEvent.contentOffset.y)
+  }
 
   return (
-    <ScrollView style={{backgroundColor: '#FFF0E9',width:deviceWidth}}>
+    <ScrollView style={{backgroundColor: '#FFF0E9',width:deviceWidth}} ref={scrollRef} onScroll={e=>setFloatIcon(e)}>
       <View><Text style={styles.productTitle}>出貨資料</Text></View>
       <View style={[styles.makeRow, styles.makePadding]}>
         <Text style={styles.makeFontSize}>出貨日期:</Text>
@@ -287,6 +292,7 @@ const SalesShipment = ({navigation,route}) => {
         <Button style={[styles.confirmBtn,styles.makeMRight10]} mode={'contained'} onPress={lastStep}><Text>客戶/商品資料 上一步</Text></Button>
         <Button style={readyToGo?[styles.nextBtn]:styles.makeWidth45} disabled={!readyToGo} mode={'contained'} onPress={showDetail}><Text>下一步 > 出貨單</Text></Button>
       </View>
+      {/*<ToTop scrollRef={scrollRef} Offset={Offset} />*/}
     </ScrollView>
   );
 };
